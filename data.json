@@ -1,0 +1,22 @@
+{
+  "sosyal": [
+    {"ad": "Instagram", "url": "https://instagram.com/HESABIN"},
+    {"ad": "YouTube", "url": "https://youtube.com/@HESABIN"},
+    {"ad": "TikTok", "url": "https://tiktok.com/@HESABIN"}
+  ],
+  "gunler": {
+    "2026-11-21": {
+      "canli": [
+        {"lig": "Premier League", "ev": "Chelsea", "dep": "Leeds", "dk": "67'", "skor": "1-0", "tahmin": "Chelsea 2+ gol atar", "guven": 60}
+      ],
+      "tekli": [
+        {"lig": "Serie A", "ev": "Como", "dep": "Cagliari", "saat": "17:00", "tahmin": "Como kazanır", "guven": 73, "durum": ""}
+      ],
+      "ikili": [
+        {"lig": "Süper Lig", "ev": "Amed", "dep": "Rizespor", "saat": "16:00", "tahmin": "Amed kaybetmez", "guven": 78, "durum": ""},
+        {"lig": "Premier League", "ev": "A. Villa", "dep": "Sunderland", "saat": "18:00", "tahmin": "A. Villa kaybetmez", "guven": 77, "durum": ""}
+      ],
+      "uclu": []
+    }
+  }
+}
