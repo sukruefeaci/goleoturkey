@@ -203,4 +203,35 @@ async function kekle(){
 async function setD(id,i,v){const c=CP[id];c.items[i].durum=v;const {error}=await sb.from("coupons").update({items:c.items}).eq("id",id);toast(error?error.message:"Kaydedildi")}
 async function ksil(id){if(confirm("Kupon silinsin mi?")){await sb.from("coupons").delete().eq("id",id);vAdm()}}
 async function tdur(id,s){await sb.from("tips").update({status:s}).eq("id",id);toast("İşaretlendi");vAdm()}
+/* ADMIN EKSTRA */
+const _vAdm=vAdm;
+vAdm=async function(){
+  await _vAdm();
+  if(tab!="adm")return;
+  const [s,st]=await Promise.all([sb.rpc("admin_stats"),sb.from("settings").select("*")]);
+  const S=s.data||{},ST=Object.fromEntries((st.data||[]).map(x=>[x.key,x.value]));
+  const k=(n,l)=>`<div class="c" style="margin:0;text-align:center"><b style="font-size:24px">${n??0}</b><div class="lg">${l}</div></div>`;
+  const x=`<h3>📊 İstatistik</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">${k(S.toplam,"Toplam üye")}${k(S.bugun,"Bugün katılan")}${k(S.aktif1,"Aktif (24 saat)")}${k(S.aktif7,"Aktif (7 gün)")}${k(S.tahmin,"Toplam tahmin")}${k(S.paylasim,"Toplam paylaşım")}</div>
+  <div class="lg" style="margin:6px 4px">Aktif: o sürede tahmin yapan ya da paylaşım ekleyen üye.</div>
+  <h3>⚙️ Puan ayarları</h3><div class="c">
+  <div class="lg">Davet başına referans puanı</div><input id="sr" type="number" value="${ST.ref_points??50}">
+  <div class="lg">Doğru tahmin puanı</div><input id="sw" type="number" value="${ST.win_points??10}">
+  <div class="lg">Tutan paylaşım puanı</div><input id="st" type="number" value="${ST.tip_points??20}">
+  <button onclick="sKaydet()">Ayarları kaydet</button></div>
+  <h3>👥 Üye yönetimi</h3><div class="c"><input id="uq" placeholder="Kullanıcı adı veya e-posta ara"><button onclick="uAra()">Ara / Son üyeleri göster</button><div id="au"></div></div>`;
+  $("v").insertAdjacentHTML("afterbegin",x);
+};
+async function sKaydet(){
+  const {error}=await sb.from("settings").upsert([{key:"ref_points",value:+$("sr").value},{key:"win_points",value:+$("sw").value},{key:"tip_points",value:+$("st").value}]);
+  toast(error?error.message:"Ayarlar kaydedildi")}
+async function uAra(){
+  const {data}=await sb.rpc("admin_users",{q:$("uq").value.trim()});
+  $("au").innerHTML=(data||[]).map(u=>`<div class="c" style="margin:8px 0;background:#f1f4fa"><b>@${e(u.username)}</b> · ⭐ ${u.points}<div class="lg">${e(u.email)}</div>
+  <div class="row"><input id="p${u.id}" type="number" placeholder="+50 ya da -20"><input id="r${u.id}" placeholder="Neden"></div>
+  <button onclick="pEkle('${u.id}')">Puanı uygula</button></div>`).join("")||'<div class="bos">Üye bulunamadı.</div>'}
+async function pEkle(id){
+  const v=parseInt($("p"+id).value);if(!v)return toast("Puan gir");
+  const {error}=await sb.rpc("admin_add_points",{uid:id,pts:v,why:$("r"+id).value.trim()||"admin düzeltme"});
+  toast(error?error.message:"Puan uygulandı");uAra()}
+
 </script></body></html>
