@@ -1,0 +1,68 @@
+<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>Goleo Admin</title>
+<style>
+body{font-family:-apple-system,sans-serif;margin:0;padding:14px;background:#eef1f6}
+input,select,button{font-size:16px;padding:9px;border:1px solid #ccd;border-radius:8px;width:100%;margin:3px 0;background:#fff}
+button{background:#1b4fd8;color:#fff;border:0;font-weight:700}
+button.k{background:#d33}button.g{background:#667}
+.c{background:#fff;border-radius:14px;padding:12px;margin:10px 0}
+.m{border-top:1px solid #dde;padding-top:8px;margin-top:8px}
+</style></head><body>
+<h2>Goleo Admin</h2>
+<div id="giris">
+<input id="kul" placeholder="GitHub kullanıcı adı">
+<input id="rep" placeholder="Repo adı">
+<input id="tok" type="password" placeholder="Token">
+<button onclick="gir()">Giriş</button></div>
+<div id="panel" style="display:none">
+<input type="date" id="tarih" onchange="render()">
+<div id="alan"></div>
+<button onclick="kaydet()">💾 Kaydet</button>
+<p id="msg"></p></div>
+<script>
+const B=[["canli","🔴 Canlı"],["tekli","Tekli"],["ikili","2'li"],["uclu","3'lü"]];
+const $=id=>document.getElementById(id);
+let S,sha,C;
+["kul","rep","tok"].forEach(k=>$(k).value=localStorage.getItem("g_"+k)||"");
+const api=()=>`https://api.github.com/repos/${C.kul}/${C.rep}/contents/data.json`;
+const H=()=>({Authorization:"Bearer "+C.tok,Accept:"application/vnd.github+json"});
+const q=v=>String(v??"").replace(/"/g,"&quot;");
+async function gir(){
+ C={kul:$("kul").value.trim(),rep:$("rep").value.trim(),tok:$("tok").value.trim()};
+ const r=await fetch(api()+"?t="+Date.now(),{headers:H()});
+ if(!r.ok){alert("Giriş başarısız: "+r.status);return}
+ const j=await r.json();sha=j.sha;
+ S=JSON.parse(decodeURIComponent(escape(atob(j.content.replace(/\n/g,"")))));
+ S.gunler=S.gunler||{};
+ Object.keys(C).forEach(k=>localStorage.setItem("g_"+k,C[k]));
+ $("giris").style.display="none";$("panel").style.display="block";
+ $("tarih").value=new Date().toLocaleDateString("sv-SE");
+ render();
+}
+function gun(){const t=$("tarih").value;return S.gunler[t]=S.gunler[t]||{}}
+function render(){
+ const g=gun();
+ $("alan").innerHTML=B.map(([k,ad])=>{
+  const ms=g[k]=g[k]||[];
+  const alanlar=[["lig","Lig"],["ev","Ev sahibi"],["dep","Deplasman"],
+   ...(k=="canli"?[["dk","Dakika (67')"],["skor","Skor (1-0)"]]:[["saat","Saat (17:00)"]]),
+   ["tahmin","Tahmin"],["guven","Güven %"]];
+  return `<div class="c"><h3>${ad}</h3>`+ms.map((m,i)=>`<div class="m">`+
+   alanlar.map(([f,p])=>`<input placeholder="${p}" value="${q(m[f])}" onchange="ed('${k}',${i},'${f}',this.value)">`).join("")+
+   (k=="canli"?"":`<select onchange="ed('${k}',${i},'durum',this.value)">`+
+    [["","⏳ Bekliyor"],["tuttu","✅ Tuttu"],["yatti","❌ Yattı"]].map(([v,t])=>`<option value="${v}" ${m.durum==v?"selected":""}>${t}</option>`).join("")+`</select>`)+
+   `<button class="k" onclick="sil('${k}',${i})">Maçı sil</button></div>`).join("")+
+  `<button class="g" onclick="ekle('${k}')">+ Maç ekle</button></div>`}).join("");
+}
+function ed(k,i,f,v){gun()[k][i][f]=f=="guven"?Number(v):v}
+function ekle(k){gun()[k].push({lig:"",ev:"",dep:"",saat:"",tahmin:"",guven:70,durum:""});render()}
+function sil(k,i){gun()[k].splice(i,1);render()}
+async function kaydet(){
+ Object.values(S.gunler).forEach(g=>Object.keys(g).forEach(k=>g[k]=g[k].filter(m=>m.ev)));
+ const body={message:"güncelleme",sha,content:btoa(unescape(encodeURIComponent(JSON.stringify(S,null,1))))};
+ const r=await fetch(api(),{method:"PUT",headers:H(),body:JSON.stringify(body)});
+ if(r.ok){const j=await r.json();sha=j.content.sha;$("msg").textContent="Kaydedildi ✓ (sitede 1-2 dk içinde görünür)";render()}
+ else $("msg").textContent="Hata: "+r.status;
+}
+</script></body></html>
