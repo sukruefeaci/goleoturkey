@@ -251,5 +251,40 @@ vPro=async function(){
       tg?tg.openTelegramLink(u):window.open(u)};
   }
 };
+/* CANLI SOHBET */
+let ts2="chat";
+const _vTop=vTop;
+vTop=async function(){
+  const seg=`<div class="sg"><button class="${ts2=="chat"?"on":""}" onclick="ts2='chat';vTop()">💬 Sohbet</button><button class="${ts2=="tips"?"on":""}" onclick="ts2='tips';vTop()">📋 Paylaşımlar</button></div>`;
+  if(ts2=="tips"){await _vTop();if(tab=="top")$("v").insertAdjacentHTML("afterbegin",seg);return}
+  const {data}=await sb.from("messages").select("*,profiles(username)").order("created_at",{ascending:false}).limit(50);
+  if(tab!="top"||ts2!="chat")return;
+  $("v").innerHTML=seg+`<div class="c" style="padding:10px"><div id="cb" style="height:calc(100dvh - 330px);min-height:240px;overflow-y:auto">${(data||[]).reverse().map(cm).join("")||'<div class="bos" id="ce">Henüz mesaj yok. İlk mesajı sen yaz!</div>'}</div>
+  <div class="row" style="margin-top:8px"><input id="ci" placeholder="Mesaj yaz..." maxlength="300" style="flex:4" onkeydown="if(event.key=='Enter')cSend()"><button style="flex:1" onclick="cSend()">➤</button></div></div>`;
+  const b=$("cb");b.scrollTop=b.scrollHeight;
+};
+function cm(m){
+  const mine=m.user_id==me.id;
+  return `<div id="m${m.id}" style="display:flex;justify-content:${mine?"flex-end":"flex-start"};margin:6px 0"><div style="max-width:80%;background:${mine?"#1b4fd8":"#f1f4fa"};color:${mine?"#fff":"#111"};border-radius:14px;padding:8px 12px">
+  <div style="font-size:11px;opacity:.7;font-weight:700">${mine?"Sen":"@"+e(m.profiles&&m.profiles.username)} · ${new Date(m.created_at).toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})}${(prof.is_admin||mine)?` <a onclick="cDel(${m.id})" style="cursor:pointer"> ✕</a>`:""}</div>
+  <div style="word-break:break-word">${e(m.body)}</div></div></div>`}
+function cAdd(m){
+  const b=$("cb");if(!b||$("m"+m.id))return;
+  const x=$("ce");if(x)x.remove();
+  b.insertAdjacentHTML("beforeend",cm(m));b.scrollTop=b.scrollHeight}
+async function cSend(){
+  const t=$("ci").value.trim();if(!t)return;
+  $("ci").value="";
+  const {data,error}=await sb.from("messages").insert({user_id:me.id,body:t}).select("*,profiles(username)").single();
+  if(error){$("ci").value=t;return toast("Gönderilemedi, biraz yavaş yaz")}
+  cAdd(data)}
+async function cDel(id){await sb.from("messages").delete().eq("id",id)}
+sb.channel("chat")
+ .on("postgres_changes",{event:"INSERT",schema:"public",table:"messages"},async p=>{
+   if(!me||tab!="top"||ts2!="chat"||!$("cb")||$("m"+p.new.id))return;
+   const {data}=await sb.from("messages").select("*,profiles(username)").eq("id",p.new.id).single();
+   if(data)cAdd(data)})
+ .on("postgres_changes",{event:"DELETE",schema:"public",table:"messages"},p=>{const x=$("m"+p.old.id);if(x)x.remove()})
+ .subscribe();
 
 </script></body></html>
