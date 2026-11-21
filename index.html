@@ -5,62 +5,96 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 *{box-sizing:border-box}
-body{margin:0;padding:14px;background:#e9edf3;color:#111;
-font-family:-apple-system,Segoe UI,Roboto,sans-serif}
-.tarih{font-size:13px;color:#667;margin:2px 4px 12px}
-.kart{background:#fff;border:1.5px solid #dde3ec;border-radius:20px;
-padding:14px;margin-bottom:16px}
+body{margin:0;padding:0 14px 90px;background:#e9edf3;color:#111;font-family:-apple-system,Segoe UI,Roboto,sans-serif}
+h1{text-align:center;margin:18px 0 6px;font-size:30px;letter-spacing:3px}
+.gun{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:14px;font-size:14px;font-weight:600;color:#556;text-align:center}
+.gun button{border:0;background:#fff;border-radius:50%;width:34px;height:34px;font-size:16px;flex:none}
+.kart{background:#fff;border:1.5px solid #dde3ec;border-radius:20px;padding:14px;margin-bottom:16px}
 .kart.ilk{background:linear-gradient(135deg,#bfe6df,#9ed8d0);border-color:#1b7f8a}
-.ust{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-.baslik{font-weight:800;font-size:17px;letter-spacing:.3px}
+.kart.cn{border-color:#e33}
+.ust{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.baslik{font-weight:800;font-size:17px}
 .guven{font-size:13px;font-weight:700;color:#555}
+.r{margin-left:auto;font-size:12px;font-weight:800;padding:4px 8px;border-radius:8px;color:#fff}
+.y{background:#1a8f3c}.k{background:#d33}
 .mac{background:#f1f4fa;border-radius:14px;padding:10px 12px;margin-bottom:8px}
-.kart.ilk .mac{background:#fff}
+.ilk .mac{background:#fff}
 .satir{display:flex;align-items:center}
 .sol{flex:1;min-width:0}
 .lig{font-size:13px;color:#667;margin-bottom:4px}
 .takim{font-weight:700;font-size:16px;margin-bottom:8px}
 .takim span{color:#888;font-weight:400;margin:0 6px}
-.tahmin{background:#3f4654;color:#fff;border-radius:10px;
-padding:9px 12px;font-weight:700;font-size:15px}
-.sag{display:flex;border-left:1px solid #d5dbe6;margin-left:12px;padding-left:12px}
-.saat{width:58px;font-weight:800;font-size:17px;align-self:center}
+.tahmin{background:#3f4654;color:#fff;border-radius:10px;padding:9px 12px;font-weight:700;font-size:15px;display:flex;align-items:center;gap:6px}
+.sag{display:flex;margin-left:12px}
+.saat{width:58px;font-weight:800;font-size:17px;align-self:center;text-align:center}
+.dk{color:#e33;font-size:12px;display:block}
 .yuzde{width:62px;text-align:center;align-self:center;border-left:1px solid #d5dbe6;padding-left:10px}
 .yuzde b{font-size:28px;display:block}
-.yuzde small{font-size:13px;font-weight:700;vertical-align:top}
+.yuzde small{font-size:13px;vertical-align:top}
 .bar{height:5px;background:#dfe5ee;border-radius:3px;margin-top:4px;overflow:hidden}
 .bar i{display:block;height:100%}
-.yesil{color:#1a8f3c}.yesil+.bar i{background:#1a8f3c}
-.turuncu{color:#d9531e}.turuncu+.bar i{background:#d9531e}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;gap:8px;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:#fffe;backdrop-filter:blur(8px);border-top:1px solid #dde}
+nav button{flex:1;border:0;border-radius:12px;padding:12px 4px;font-size:14px;font-weight:700;background:#e9edf3;color:#334}
+nav button.on{background:#1b4fd8;color:#fff}
+.link{display:block;background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;font-weight:700;color:#1b4fd8;text-decoration:none;text-align:center}
 .bos{text-align:center;color:#778;padding:30px}
 </style></head><body>
-<div class="tarih" id="tarih"></div>
-<div id="liste"><div class="bos">Yükleniyor...</div></div>
+<h1>Goleo</h1>
+<div class="gun" id="gun"><button onclick="gd(-1)">‹</button><span id="gl"></span><button onclick="gd(1)">›</button></div>
+<div id="icerik"><div class="bos">Yükleniyor...</div></div>
+<nav>
+<button id="b-ana" class="on" onclick="git('ana')">🏠 Ana Menü</button>
+<button id="b-kaz" onclick="git('kaz')">🏆 Kazananlar</button>
+<button id="b-tak" onclick="git('tak')">🔔 Takip Et</button>
+</nav>
 <script>
-const tg=window.Telegram&&Telegram.WebApp;
-if(tg){tg.ready();tg.expand();}
-const bolumler=[["tekli","TEKLİ KUPON"],["ikili","2'Lİ KUPON"],["uclu","3'LÜ KUPON"]];
-function mac(m){
-  const c=m.guven>=60?"yesil":"turuncu";
-  return `<div class="mac"><div class="satir">
-  <div class="sol"><div class="lig">${m.lig||""}</div>
-  <div class="takim">${m.ev}<span>–</span>${m.dep}</div>
-  <div class="tahmin">${m.tahmin}</div></div>
-  <div class="sag"><div class="saat">${m.saat||""}</div>
-  <div class="yuzde"><b class="${c}"><small>%</small>${m.guven}</b>
-  <div class="bar"><i style="width:${m.guven}%"></i></div></div></div>
-  </div></div>`;
+const tg=window.Telegram&&Telegram.WebApp;if(tg){tg.ready();tg.expand()}
+const B=[["canli","🔴 CANLI TAHMİNLER"],["tekli","TEKLİ KUPON"],["ikili","2'Lİ KUPON"],["uclu","3'LÜ KUPON"]];
+const AD=Object.fromEntries(B);
+let D={gunler:{},sosyal:[]},sayfa="ana",gun=new Date();
+const $=id=>document.getElementById(id);
+const key=d=>d.toLocaleDateString("sv-SE");
+const rz=d=>d=="tuttu"?'<span class="r y">✓ TUTTU</span>':d=="yatti"?'<span class="r k">✗ YATTI</span>':"";
+const kd=ms=>ms.some(m=>m.durum=="yatti")?"yatti":ms.every(m=>m.durum=="tuttu")?"tuttu":"";
+function mac(m,c){
+ const rk=m.guven>=60?"#1a8f3c":"#d9531e";
+ return `<div class="mac"><div class="satir"><div class="sol">
+ <div class="lig">${m.lig||""}</div>
+ <div class="takim">${m.ev}<span>–</span>${m.dep}</div>
+ <div class="tahmin">${m.tahmin||""}${c?"":rz(m.durum)}</div></div>
+ <div class="sag"><div class="saat">${c?`<span class="dk">${m.dk||""}</span>${m.skor||""}`:(m.saat||"")}</div>
+ ${m.guven?`<div class="yuzde"><b style="color:${rk}"><small>%</small>${m.guven}</b><div class="bar"><i style="width:${m.guven}%;background:${rk}"></i></div></div>`:""}
+ </div></div></div>`;
 }
-fetch("kuponlar.json?"+Date.now()).then(r=>r.json()).then(d=>{
-  document.getElementById("tarih").textContent=d.tarih||"";
-  let h="";
-  bolumler.forEach(([k,ad],i)=>{
-    const b=d[k]; if(!b||!b.maclar||!b.maclar.length) return;
-    const ort=b.guven||Math.round(b.maclar.reduce((t,m)=>t+m.guven,0)/b.maclar.length);
-    h+=`<div class="kart ${i==0?"ilk":""}"><div class="ust">
-    <span class="baslik">${ad}</span><span class="guven">%${ort} GÜVEN</span></div>
-    ${b.maclar.map(mac).join("")}</div>`;
-  });
-  document.getElementById("liste").innerHTML=h||'<div class="bos">Bugün kupon yok.</div>';
-}).catch(()=>{document.getElementById("liste").innerHTML='<div class="bos">Veri yüklenemedi.</div>';});
-</script></body>
+function kart(ad,ms,cls,c,rozet,tarih){
+ const gs=ms.filter(m=>m.guven);
+ const ort=gs.length?Math.round(gs.reduce((t,m)=>t+Number(m.guven),0)/gs.length):0;
+ return `<div class="kart ${cls}"><div class="ust"><span class="baslik">${ad}</span>
+ ${ort&&!c?`<span class="guven">%${ort} GÜVEN</span>`:""}${tarih?`<span class="guven">${tarih}</span>`:""}${rozet||""}</div>
+ ${ms.map(m=>mac(m,c)).join("")}</div>`;
+}
+function ciz(){
+ let h="";
+ $("gun").style.display=sayfa=="ana"?"flex":"none";
+ if(sayfa=="ana"){
+  $("gl").textContent=gun.toLocaleDateString("tr-TR",{day:"numeric",month:"long",year:"numeric",weekday:"long"});
+  const g=D.gunler[key(gun)]||{};
+  B.forEach(([k,ad])=>{const ms=g[k];
+   if(ms&&ms.length)h+=kart(ad,ms,k=="tekli"?"ilk":k=="canli"?"cn":"",k=="canli",k=="canli"?"":rz(kd(ms)))});
+  h=h||'<div class="bos">Bu gün için kupon yok.</div>';
+ }else if(sayfa=="kaz"){
+  Object.keys(D.gunler).sort().reverse().forEach(t=>["tekli","ikili","uclu"].forEach(k=>{
+   const ms=D.gunler[t][k];
+   if(ms&&ms.length&&kd(ms)=="tuttu")h+=kart(AD[k],ms,"",false,rz("tuttu"),new Date(t+"T12:00").toLocaleDateString("tr-TR",{day:"numeric",month:"long"}))}));
+  h=h||'<div class="bos">Henüz kazanan kupon yok.</div>';
+ }else{
+  h=(D.sosyal||[]).map(s=>`<a class="link" href="${s.url}" onclick="return ac('${s.url}')">${s.ad}</a>`).join("")||'<div class="bos">Hesaplar yakında.</div>';
+ }
+ $("icerik").innerHTML=h;
+}
+function git(s){sayfa=s;["ana","kaz","tak"].forEach(x=>$("b-"+x).className=x==s?"on":"");ciz()}
+function gd(n){gun.setDate(gun.getDate()+n);ciz()}
+function ac(u){if(tg){tg.openLink(u);return false}return true}
+fetch("data.json?"+Date.now()).then(r=>r.json()).then(d=>{D=d;ciz()})
+.catch(()=>$("icerik").innerHTML='<div class="bos">Veri yüklenemedi.</div>');
+</script></body></html>
