@@ -233,5 +233,23 @@ async function pEkle(id){
   const v=parseInt($("p"+id).value);if(!v)return toast("Puan gir");
   const {error}=await sb.rpc("admin_add_points",{uid:id,pts:v,why:$("r"+id).value.trim()||"admin düzeltme"});
   toast(error?error.message:"Puan uygulandı");uAra()}
+/* TELEGRAM DAVET LİNKİ */
+const BOT="goleoaibot";
+const _vPro=vPro;
+vPro=async function(){
+  await _vPro();
+  if(tab!="pro")return;
+  const l="https://t.me/"+BOT+"?startapp="+prof.ref_code;
+  const i=document.querySelector("#v input[readonly]");
+  if(i)i.value=l;
+  const b=[...document.querySelectorAll("#v button")].find(x=>(x.getAttribute("onclick")||"").includes("clipboard"));
+  if(b){
+    b.onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText(l);toast("Link kopyalandı")};
+    b.insertAdjacentHTML("afterend",'<button id="tgs" class="g">Telegram\'da paylaş</button>');
+    $("tgs").onclick=()=>{
+      const u="https://t.me/share/url?url="+encodeURIComponent(l)+"&text="+encodeURIComponent("Goleo'da tahmin yap, puan kazan! 🏆");
+      tg?tg.openTelegramLink(u):window.open(u)};
+  }
+};
 
 </script></body></html>
