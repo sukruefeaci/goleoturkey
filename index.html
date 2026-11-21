@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="tr"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:14px;background:#e9edf3;color:#111;
+font-family:-apple-system,Segoe UI,Roboto,sans-serif}
+.tarih{font-size:13px;color:#667;margin:2px 4px 12px}
+.kart{background:#fff;border:1.5px solid #dde3ec;border-radius:20px;
+padding:14px;margin-bottom:16px}
+.kart.ilk{background:linear-gradient(135deg,#bfe6df,#9ed8d0);border-color:#1b7f8a}
+.ust{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.baslik{font-weight:800;font-size:17px;letter-spacing:.3px}
+.guven{font-size:13px;font-weight:700;color:#555}
+.mac{background:#f1f4fa;border-radius:14px;padding:10px 12px;margin-bottom:8px}
+.kart.ilk .mac{background:#fff}
+.satir{display:flex;align-items:center}
+.sol{flex:1;min-width:0}
+.lig{font-size:13px;color:#667;margin-bottom:4px}
+.takim{font-weight:700;font-size:16px;margin-bottom:8px}
+.takim span{color:#888;font-weight:400;margin:0 6px}
+.tahmin{background:#3f4654;color:#fff;border-radius:10px;
+padding:9px 12px;font-weight:700;font-size:15px}
+.sag{display:flex;border-left:1px solid #d5dbe6;margin-left:12px;padding-left:12px}
+.saat{width:58px;font-weight:800;font-size:17px;align-self:center}
+.yuzde{width:62px;text-align:center;align-self:center;border-left:1px solid #d5dbe6;padding-left:10px}
+.yuzde b{font-size:28px;display:block}
+.yuzde small{font-size:13px;font-weight:700;vertical-align:top}
+.bar{height:5px;background:#dfe5ee;border-radius:3px;margin-top:4px;overflow:hidden}
+.bar i{display:block;height:100%}
+.yesil{color:#1a8f3c}.yesil+.bar i{background:#1a8f3c}
+.turuncu{color:#d9531e}.turuncu+.bar i{background:#d9531e}
+.bos{text-align:center;color:#778;padding:30px}
+</style></head><body>
+<div class="tarih" id="tarih"></div>
+<div id="liste"><div class="bos">Yükleniyor...</div></div>
+<script>
+const tg=window.Telegram&&Telegram.WebApp;
+if(tg){tg.ready();tg.expand();}
+const bolumler=[["tekli","TEKLİ KUPON"],["ikili","2'Lİ KUPON"],["uclu","3'LÜ KUPON"]];
+function mac(m){
+  const c=m.guven>=60?"yesil":"turuncu";
+  return `<div class="mac"><div class="satir">
+  <div class="sol"><div class="lig">${m.lig||""}</div>
+  <div class="takim">${m.ev}<span>–</span>${m.dep}</div>
+  <div class="tahmin">${m.tahmin}</div></div>
+  <div class="sag"><div class="saat">${m.saat||""}</div>
+  <div class="yuzde"><b class="${c}"><small>%</small>${m.guven}</b>
+  <div class="bar"><i style="width:${m.guven}%"></i></div></div></div>
+  </div></div>`;
+}
+fetch("kuponlar.json?"+Date.now()).then(r=>r.json()).then(d=>{
+  document.getElementById("tarih").textContent=d.tarih||"";
+  let h="";
+  bolumler.forEach(([k,ad],i)=>{
+    const b=d[k]; if(!b||!b.maclar||!b.maclar.length) return;
+    const ort=b.guven||Math.round(b.maclar.reduce((t,m)=>t+m.guven,0)/b.maclar.length);
+    h+=`<div class="kart ${i==0?"ilk":""}"><div class="ust">
+    <span class="baslik">${ad}</span><span class="guven">%${ort} GÜVEN</span></div>
+    ${b.maclar.map(mac).join("")}</div>`;
+  });
+  document.getElementById("liste").innerHTML=h||'<div class="bos">Bugün kupon yok.</div>';
+}).catch(()=>{document.getElementById("liste").innerHTML='<div class="bos">Veri yüklenemedi.</div>';});
+</script></body>
