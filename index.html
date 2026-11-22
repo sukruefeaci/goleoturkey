@@ -572,5 +572,6 @@ async function dKisi(id){
   const msg=$("dm"+id).value.trim();if(!msg)return toast("Mesaj yaz");
   const {data,error}=await sb.rpc("admin_send",{uid:id,msg});
   if(error||!data)return toast("Gönderilemedi");
-  toast(data.msg);if(data.ok)$("dm"+id).
+  toast(data.msg);if(data.ok)$("dm"+id).value=""}
+
 </script></body></html>
