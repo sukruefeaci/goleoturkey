@@ -230,4 +230,110 @@ async function kekle(){
 async function setD(id,i,v){const c=CP[id];c.items[i].durum=v;const {error}=await sb.from("coupons").update({items:c.items}).eq("id",id);toast(error?error.message:"Kaydedildi")}
 async function ksil(id){if(confirm("Kupon silinsin mi?")){await sb.from("coupons").delete().eq("id",id);vAdm()}}
 async function tdur(id,s){await sb.from("tips").update({status:s}).eq("id",id);toast("İşaretlendi");vAdm()}
+/* CEKILIS */
+let cdT;
+const _go=go;
+go=function(t){clearInterval(cdT);_go(t)};
+
+function cdTick(end){
+  const el=$("cd");if(!el){clearInterval(cdT);return}
+  const s=Math.floor((new Date(end)-Date.now())/1000);
+  if(s<=0){el.textContent="Süre doldu";return}
+  const g=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);
+  el.textContent=(g?g+"g ":"")+String(h).padStart(2,"0")+":"+String(m).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
+}
+
+const _vPro=vPro;
+vPro=async function(){
+  await _vPro();
+  if(tab!="pro")return;
+  const {data:rs}=await sb.from("raffles").select("*").neq("status","cancelled").order("id",{ascending:false}).limit(1);
+  const R=rs&&rs[0];if(!R)return;
+  let h="";
+  if(R.status=="open"){
+    const [pf,mine,stt]=await Promise.all([
+      sb.from("profiles").select("tg_username,points").eq("id",me.id).single(),
+      sb.from("raffle_entries").select("id",{count:"exact",head:true}).eq("raffle_id",R.id).eq("user_id",me.id),
+      sb.rpc("raffle_stats",{rid:R.id})]);
+    const pts=pf.data.points,have=mine.count||0,S=stt.data||{};
+    const bitti=new Date(R.ends_at)<=new Date();
+    const allowed=R.spend?Math.floor(pts/R.cost):Math.floor(pts/R.cost)-have;
+    const kapali=bitti||allowed<1;
+    h=`<div class="c" style="border:2px solid #1b4fd8"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>🎁 ${e(R.title)}</b><span class="pk">${R.winners} kazanan${R.backups?" + "+R.backups+" yedek":""}</span></div>
+    <div style="font-size:13px;color:#556;margin:6px 0;white-space:pre-line">${e(R.descr||"")}</div>
+    <div id="cd" style="text-align:center;font-size:26px;font-weight:800"></div><div class="lg" style="text-align:center">Bitmesine kalan süre</div>
+    <div class="lg" style="margin-top:8px">Her katılım için ${R.cost} puan ${R.spend?"harcanır":"gerekir (puanın düşmez)"} · Toplam ${S.entries||0} katılım</div>
+    <div class="lg">Puanın: ⭐ ${pts} · Katılımların: ${have}</div>
+    <div class="lg">Telegram kullanıcı adın</div>
+    <div class="row"><input id="tgu" placeholder="@kullaniciadi" value="${pf.data.tg_username?"@"+e(pf.data.tg_username):""}"><button class="g" style="flex:none;width:auto" onclick="tgKaydet()">Kaydet</button></div>
+    <div class="row"><input id="cn" type="number" min="1" value="1" ${kapali?"disabled":""}><button onclick="cKatil(${R.id})" ${kapali?"disabled":""}>Katıl</button></div>
+    <div class="lg" style="${kapali?"color:#d33":""}">${bitti?"Süre doldu, sonuç bekleniyor.":allowed<1?(pts<R.cost?"Puanın yetmiyor.":"Daha fazla katılamazsın."):"En fazla "+allowed+" kez katılabilirsin."}</div></div>`;
+  }else{
+    const {data:w}=await sb.rpc("get_raffle_winners",{rid:R.id});
+    const ben=(w||[]).find(x=>x.username==prof.username);
+    h=`<div class="c" style="border:2px solid #1a8f3c"><b>🎉 ${e(R.title)} sonuçları</b>
+    ${ben?`<div class="pk y" style="display:block;margin:8px 0;text-align:center">Tebrikler, ${ben.kind=="asil"?"kazandın":"yedek listesindesin"}! Seninle Telegram'dan iletişime geçilecek.</div>`:""}
+    ${(w||[]).map(x=>`<div class="lb"><span>${x.kind=="asil"?"🏆":"🔁"} ${x.sira}. @${e(x.username)}</span><b>${x.kind=="asil"?"Asıl":"Yedek"}</b></div>`).join("")||'<div class="bos">Katılım olmadı.</div>'}</div>`;
+  }
+  $("v").insertAdjacentHTML("afterbegin",h);
+  if(R.status=="open"){clearInterval(cdT);cdTick(R.ends_at);cdT=setInterval(()=>cdTick(R.ends_at),1000)}
+};
+async function tgKaydet(){
+  const v=$("tgu").value.trim().replace(/^@/,"");
+  if(!/^[A-Za-z0-9_]{5,32}$/.test(v))return toast("Geçerli bir Telegram kullanıcı adı yaz");
+  const {error}=await sb.from("profiles").update({tg_username:v}).eq("id",me.id);
+  toast(error?"Kaydedilemedi":"Kaydedildi ✓")}
+async function cKatil(id){
+  const n=parseInt($("cn").value)||1;
+  const {data,error}=await sb.rpc("raffle_join",{rid:id,n});
+  if(error||!data)return toast("Katılınamadı, tekrar dene");
+  toast(data.msg);if(data.ok)vPro()}
+
+/* CEKILIS ADMIN */
+const _vAdm=vAdm;
+vAdm=async function(){
+  await _vAdm();
+  if(tab!="adm")return;
+  const {data:rs}=await sb.from("raffles").select("*").order("id",{ascending:false}).limit(1);
+  const R=rs&&rs[0],open=R&&R.status=="open";
+  const dl=d=>{const x=new Date(d);x.setMinutes(x.getMinutes()-x.getTimezoneOffset());return x.toISOString().slice(0,16)};
+  const f=open?R:{title:"",descr:"",ends_at:Date.now()+864e5,winners:1,backups:0,cost:100};
+  let S={};if(open){const s=await sb.rpc("raffle_stats",{rid:R.id});S=s.data||{}}
+  let h=`<h3>🎁 Çekiliş</h3><div class="c"><input id="rt" placeholder="Başlık" value="${e(f.title)}">
+  <textarea id="rd" rows="2" placeholder="Açıklama (ödül, kurallar)">${e(f.descr||"")}</textarea>
+  <div class="lg">Bitiş zamanı</div><input id="re" type="datetime-local" value="${dl(f.ends_at)}">
+  <div class="row"><div><div class="lg">Kazanan sayısı</div><input id="rw" type="number" value="${f.winners}"></div><div><div class="lg">Yedek sayısı</div><input id="rb" type="number" value="${f.backups}"></div></div>
+  <div class="lg">Katılım için gereken puan</div><input id="rc" type="number" value="${f.cost}">
+  ${open?`<div class="lg">Puan ${R.spend?"harcanıyor":"harcanmıyor"} · ${S.users||0} kişi, ${S.entries||0} katılım</div>
+  <button onclick="cGuncelle(${R.id})">Güncelle</button><button class="r" onclick="cCek(${R.id})">🎲 Bitir ve rastgele çek</button><button class="g" onclick="cIptal(${R.id})">İptal et</button>`
+  :`<select id="rs1"><option value="0">Katılınca puan düşmesin (sadece şart)</option><option value="1">Katılınca puan düşsün (bilet gibi)</option></select><button onclick="cBaslat()">Çekilişi başlat</button>`}</div>`;
+  if(R&&R.status=="drawn"){
+    const {data:w}=await sb.from("raffle_winners").select("*,profiles(username)").eq("raffle_id",R.id).order("kind").order("sira");
+    h+=`<div class="c"><b>Son çekiliş: ${e(R.title)}</b>`+(w||[]).map(x=>`<div class="lb"><span>${x.kind=="asil"?"🏆":"🔁"} ${x.sira}. @${e(x.profiles&&x.profiles.username)}</span><b>@${e(x.tg_username)}</b></div>`).join("")+"</div>";
+  }
+  if(tab=="adm")$("v").insertAdjacentHTML("afterbegin",h);
+};
+function cForm(){
+  const t=$("rt").value.trim(),en=$("re").value,cost=+$("rc").value;
+  if(!t||!en){toast("Başlık ve bitiş zamanı gerekli");return null}
+  if(!(cost>0)){toast("Puan 0'dan büyük olmalı");return null}
+  return {title:t,descr:$("rd").value.trim()||null,ends_at:new Date(en).toISOString(),winners:Math.max(1,+$("rw").value||1),backups:Math.max(0,+$("rb").value||0),cost};
+}
+async function cBaslat(){
+  const row=cForm();if(!row)return;
+  const {error}=await sb.from("raffles").insert({...row,spend:$("rs1").value=="1"});
+  toast(error?(error.message.includes("duplicate")?"Zaten açık bir çekiliş var":error.message):"Çekiliş başlatıldı");vAdm()}
+async function cGuncelle(id){
+  const row=cForm();if(!row)return;
+  const {error}=await sb.from("raffles").update(row).eq("id",id);
+  toast(error?error.message:"Güncellendi");vAdm()}
+async function cCek(id){
+  if(!confirm("Çekiliş sonlandırılsın ve kazananlar rastgele seçilsin mi? Geri alınamaz."))return;
+  const {data,error}=await sb.rpc("raffle_draw",{rid:id});
+  toast(error?error.message:"Çekiliş yapıldı: "+data.secilen+" kişi seçildi");vAdm()}
+async function cIptal(id){
+  if(!confirm("Çekiliş iptal edilsin mi?"))return;
+  const {error}=await sb.rpc("raffle_cancel",{rid:id});
+  toast(error?error.message:"İptal edildi");vAdm()}
+
 </script></body></html>
