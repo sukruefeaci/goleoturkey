@@ -438,4 +438,71 @@ async function pkKaydet(id){
   if(!row.price_label)return toast("Fiyat yazısı gerekli");
   const {error}=await sb.from("point_packs").update(row).eq("id",id);
   toast(error?error.message:"Kaydedildi ✓")}
+/* VIP ABONELIK */
+const pcq=id=>document.querySelector('.pc[data-id="'+id+'"]');
+const trD=d=>new Date(d).toLocaleDateString("tr-TR",{day:"numeric",month:"long",year:"numeric"});
+async function vipSub(){
+  const {data}=await sb.from("vip_subs").select("ends_at").eq("user_id",me.id).gt("ends_at",new Date().toISOString()).order("ends_at",{ascending:false}).limit(1);
+  return data&&data[0]?data[0].ends_at:null}
+
+const _vPro2=vPro;
+vPro=async function(){
+  await _vPro2();
+  if(tab!="pro")return;
+  const [pl,end]=await Promise.all([sb.from("vip_plans").select("*").eq("active",true).order("sort").order("id"),vipSub()]);
+  if(tab!="pro")return;
+  const h=`<div class="c" id="vsub" style="border:2px solid #f5c542"><b>👑 VIP Üyelik</b>
+  <div class="lg" style="margin-top:4px">Üyelik süresince tüm VIP tahminleri görürsün. Süre dolunca tek tek satın aldıkların açık kalır. Tahminler kazanç garantisi vermez.</div>
+  ${end?`<div class="pk y" style="display:block;margin:8px 0;text-align:center">✓ Aktif · Bitiş: ${trD(end)}</div>`:""}
+  ${(pl.data||[]).map(x=>`<div class="lb"><span>${e(x.title)}<div class="lg" style="margin:0">${x.days} gün</div></span><button style="width:auto;margin:0;padding:8px 14px" onclick="planAl(${x.id},${x.price},${x.days})">${x.price} puan${end?" · Uzat":""}</button></div>`).join("")||bos("Şu an üyelik paketi yok.")}</div>`;
+  const s=$("vipshop");
+  if(s){
+    s.insertAdjacentHTML("beforebegin",h);
+    if(end)s.innerHTML='<b>👑 VIP Tahminler</b><div class="lg" style="margin-top:4px">Üyeliğin aktif, tüm VIP tahminler Kupon › VIP bölümünde açık.</div>';
+  }
+};
+async function planAl(id,p,d){
+  if(!confirm(p+" puan harcanacak, "+d+" gün VIP açılacak. Onaylıyor musun?"))return;
+  const {data,error}=await sb.rpc("vip_sub_buy",{pid:id});
+  if(error||!data)return toast("Satın alınamadı");
+  toast(data.msg);if(data.ok)vPro()}
+
+const _vKup2=vKup;
+vKup=async function(){
+  await _vKup2();
+  if(tab!="kup")return;
+  const end=await vipSub();
+  if(end&&tab=="kup")$("v").insertAdjacentHTML("afterbegin",`<div class="pk y" style="display:block;margin-bottom:10px;text-align:center">👑 VIP üyeliğin ${trD(end)} tarihine kadar aktif</div>`);
+};
+
+/* VIP ABONELIK ADMIN */
+const _aVip2=aVip;
+aVip=async function(){
+  await _aVip2();
+  const [pl,sc]=await Promise.all([
+    sb.from("vip_plans").select("*").order("sort").order("id"),
+    sb.from("vip_subs").select("user_id",{count:"exact",head:true}).gt("ends_at",new Date().toISOString())]);
+  const x=$("ab");if(!x||tab!="adm")return;
+  x.insertAdjacentHTML("afterbegin",`<div class="c"><b>👑 Süreli VIP paketleri</b><div class="lg">Şu an aktif üyelik sayısı: ${sc.count||0}</div>
+  ${(pl.data||[]).map(p=>`<div class="c pc" data-id="${p.id}" style="background:#f1f4fa"><input class="q-title" placeholder="Paket adı" value="${e(p.title)}">
+  <div class="row"><div><div class="lg">Süre (gün)</div><input class="q-days" type="number" value="${p.days}"></div><div><div class="lg">Fiyat (puan)</div><input class="q-price" type="number" value="${p.price}"></div></div>
+  <div class="row"><input class="q-sort" type="number" placeholder="Sıra" value="${p.sort}"><select class="q-act">${onOff(p.active)}</select></div>
+  <div class="row"><button onclick="plKaydet(${p.id})">Kaydet</button><button class="r" onclick="plSil(${p.id})">Sil</button></div></div>`).join("")}
+  <b>Yeni paket</b><input id="np-t" placeholder="Paket adı (örn. 1 Aylık VIP)"><div class="row"><input id="np-d" type="number" placeholder="Gün (30)"><input id="np-p" type="number" placeholder="Puan (2000)"></div>
+  <button onclick="plEkle()">Paketi ekle</button></div>`);
+};
+async function plKaydet(id){
+  const c=pcq(id),g=s=>c.querySelector(s).value.trim();
+  const row={title:g(".q-title"),days:Math.max(1,+g(".q-days")||1),price:Math.max(0,+g(".q-price")||0),sort:+g(".q-sort")||0,active:g(".q-act")=="1"};
+  if(!row.title)return toast("Paket adı gerekli");
+  const {error}=await sb.from("vip_plans").update(row).eq("id",id);
+  toast(error?error.message:"Kaydedildi ✓")}
+async function plSil(id){
+  if(confirm("Paket silinsin mi? Mevcut üyelikler etkilenmez.")){await sb.from("vip_plans").delete().eq("id",id);vAdm()}}
+async function plEkle(){
+  const row={title:$("np-t").value.trim(),days:+$("np-d").value,price:+$("np-p").value};
+  if(!row.title||!(row.days>0)||$("np-p").value===""||!(row.price>=0))return toast("Ad, gün ve puan gerekli");
+  const {error}=await sb.from("vip_plans").insert(row);
+  toast(error?error.message:"Paket eklendi");vAdm()}
+
 </script></body></html>
