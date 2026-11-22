@@ -16,10 +16,8 @@ header h1{margin:0;font-size:26px;letter-spacing:2px}
 .mac{background:#fff;border-radius:16px;padding:12px 14px;margin-bottom:10px}
 .lg{font-size:12px;color:#667;margin-bottom:4px}
 .tk{font-weight:700;font-size:16px;display:flex;justify-content:space-between;gap:8px}
-.tk b{white-space:nowrap}
-.rd{color:#e33}
 .pk{display:inline-block;margin-top:6px;font-size:12px;font-weight:700;background:#e9edf3;border-radius:8px;padding:4px 8px}
-.pk.won,.y{background:#1a8f3c;color:#fff}.pk.lost,.k{background:#d33;color:#fff}
+.y{background:#1a8f3c;color:#fff}.k{background:#d33;color:#fff}
 h3{margin:14px 4px 8px;font-size:15px;color:#445}
 input,select,textarea,button{font:inherit;font-size:16px;padding:10px;border:1px solid #ccd;border-radius:10px;width:100%;margin:4px 0;background:#fff;color:#111}
 button{background:#1b4fd8;color:#fff;border:0;font-weight:700}
@@ -34,12 +32,6 @@ nav a.on{color:#1b4fd8}
 .row{display:flex;gap:8px}.row>*{flex:1;min-width:0}
 .lb{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #eef}
 .lb b:first-child{width:28px;color:#778}.lb span{flex:1;font-weight:600}
-#md{position:fixed;inset:0;background:#0007;display:none;align-items:flex-end;z-index:9}
-#md>div{background:#fff;width:100%;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
-.pb{display:flex;gap:8px}
-.pb button{background:#f1f4fa;color:#111;padding:14px 4px;font-size:14px}
-.pb button.on{background:#1b4fd8;color:#fff}
-.pb small{display:block;font-weight:400;opacity:.7}
 #ts{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;display:none;z-index:99}
 .bos{text-align:center;color:#778;padding:24px}
 .dt{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:10px;font-weight:600;font-size:14px}
@@ -48,35 +40,35 @@ nav a.on{color:#1b4fd8}
 <header><h1>Goleo</h1><span class="pt" id="pt"></span></header>
 <div id="v"></div>
 <nav id="nav" style="display:none"></nav>
-<div id="md" onclick="if(event.target==this)this.style.display='none'"><div id="mb"></div></div>
 <div id="ts"></div>
 <script>
 const sb=supabase.createClient("https://iaomtetwapkqaudmdzit.supabase.co","sb_publishable_NA6zmK6sku27Zt7bUqULMA_-Os-ojfo");
 const tg=window.Telegram&&Telegram.WebApp;if(tg){tg.ready();tg.expand()}
+const BOT="goleoaibot"; /* Telegram bot kullanıcı adın (@ olmadan). Boşsa davet linki site adresi olur. */
 const $=id=>document.getElementById(id);
 const e=s=>String(s??"").replace(/[&<>"']/g,c=>"&#"+c.charCodeAt(0)+";");
 const REF=(new URLSearchParams(location.search).get("ref")||(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.start_param)||"").toUpperCase();
-let me,cur,prof,tab="mac",kayit=false,per="week",kg=new Date(),MS=[],preds={},CP={};
+let me,cur,prof,tab="sp",kayit=false,per="week",kg=new Date(),ts2="chat",SPM={},CP={},RL="";
 const key=d=>d.toLocaleDateString("sv-SE");
 const fz=d=>new Date(d).toLocaleString("tr-TR",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
+const okUrl=u=>/^https?:\/\//i.test(u);
 function toast(t){const x=$("ts");x.textContent=t;x.style.display="block";setTimeout(()=>x.style.display="none",2500)}
 const hata=m=>({"Invalid login credentials":"E-posta veya şifre hatalı","User already registered":"Bu e-posta zaten kayıtlı"}[m]||m);
 
 sb.auth.onAuthStateChange((_,s)=>{const id=s?s.user.id:null;if(id===cur)return;cur=id;me=s?s.user:null;setTimeout(start,0)});
-sb.channel("m").on("postgres_changes",{event:"*",schema:"public",table:"matches"},()=>{if(me&&tab=="mac")vMac()}).subscribe();
-setInterval(()=>{if(me&&tab=="mac"&&$("md").style.display!="flex")vMac()},60000);
 
 async function start(){
   if(!me){$("nav").style.display="none";$("pt").textContent="";return authV()}
   const {data}=await sb.from("profiles").select("*").eq("id",me.id).single();
   prof=data;$("pt").textContent="⭐ "+prof.points;
-  const T=[["mac","⚽","Maçlar"],["kup","🎫","Kupon"],["top","💬","Topluluk"],["sir","🏆","Sıralama"],["pro","👤","Profil"]];
+  const T=[["sp","🤝","Sponsorlar"],["kup","🎫","Kupon"],["top","💬","Topluluk"],["sir","🏆","Sıralama"],["pro","👤","Profil"]];
   if(prof.is_admin)T.push(["adm","⚙️","Admin"]);
   $("nav").innerHTML=T.map(([k,i,n])=>`<a id="n-${k}" onclick="go('${k}')"><i>${i}</i>${n}</a>`).join("");
   $("nav").style.display="flex";go(tab);
 }
-function go(t){tab=t;document.querySelectorAll("nav a").forEach(a=>a.className=a.id=="n-"+t?"on":"");({mac:vMac,kup:vKup,top:vTop,sir:vSir,pro:vPro,adm:vAdm})[t]()}
+function go(t){tab=t;document.querySelectorAll("nav a").forEach(a=>a.className=a.id=="n-"+t?"on":"");({sp:vSp,kup:vKup,top:vTop,sir:vSir,pro:vPro,adm:vAdm})[t]()}
 
+/* GIRIS */
 function authV(){
   $("v").innerHTML=`<div class="c"><h3 style="margin-top:0">${kayit?"Kayıt Ol":"Giriş Yap"}</h3>
   <input id="em" type="email" placeholder="E-posta" autocomplete="email">
@@ -86,40 +78,25 @@ function authV(){
   <button class="g" onclick="kayit=!kayit;authV()">${kayit?"Hesabım var":"Hesap oluştur"}</button></div>`}
 async function auth(){
   const email=$("em").value.trim(),pw=$("pw").value;let r;
-  if(kayit)r=await sb.auth.signUp({email,password:pw,options:{data:{username:$("un").value.trim(),ref:$("rf").value.trim()}}});
-  else r=await sb.auth.signInWithPassword({email,password:pw});
+  if(kayit){
+    const un=$("un").value.trim();
+    if(un.length<3)return toast("Kullanıcı adı en az 3 karakter");
+    r=await sb.auth.signUp({email,password:pw,options:{data:{username:un,ref:$("rf").value.trim()}}});
+  }else r=await sb.auth.signInWithPassword({email,password:pw});
   if(r.error)return toast(hata(r.error.message));
   if(kayit&&!r.data.session)toast("Kayıt alındı. E-postanı onaylayıp giriş yap.");
 }
 
-/* MAÇLAR */
-const lbl=(p,m)=>p=="1"?m.home:p=="2"?m.away:"Beraberlik";
-function mc(m){
-  const p=preds[m.id],lv=m.status=="LIVE",ft=m.status=="FT";
-  return `<div class="mac" onclick="acM(${m.id})"><div class="lg">${e(m.league)} · ${lv?`<b class="rd">CANLI ${e(m.minute)}</b>`:fz(m.kickoff)}</div>
-  <div class="tk"><span>${e(m.home)}</span><b>${lv||ft?(m.home_score??0)+" - "+(m.away_score??0):"–"}</b><span style="text-align:right">${e(m.away)}</span></div>
-  ${p?`<span class="pk ${p.result||""}">Tahminin: ${e(lbl(p.pick,m))}${p.result=="won"?" ✓":p.result=="lost"?" ✗":""}</span>`:'<span class="pk">Tahmin yap ›</span>'}</div>`}
-async function vMac(){
-  const [m,p]=await Promise.all([
-    sb.from("matches").select("*").gte("kickoff",new Date(Date.now()-864e5).toISOString()).order("kickoff"),
-    sb.from("predictions").select("match_id,pick,result")]);
-  MS=m.data||[];preds=Object.fromEntries((p.data||[]).map(x=>[x.match_id,x]));
-  const g=(s,t)=>{const l=MS.filter(x=>x.status==s);return l.length?`<h3>${t}</h3>`+l.map(mc).join(""):""};
-  if(tab=="mac")$("v").innerHTML=g("LIVE","🔴 Canlı")+g("NS","Oynanacak")+g("FT","Biten")||'<div class="bos">Yakında maç yok.</div>'}
-async function acM(id){
-  const m=MS.find(x=>x.id==id),p=preds[id],kil=m.status!="NS"||new Date(m.kickoff)<=new Date();
-  const {data}=await sb.rpc("match_stats",{mid:id});
-  const st=Object.fromEntries((data||[]).map(x=>[x.pick,Number(x.adet)])),tp=Object.values(st).reduce((a,b)=>a+b,0);
-  const b=(v,t)=>`<button class="${p&&p.pick==v?"on":""}" ${kil?"disabled":""} onclick="pick(${id},'${v}')">${e(t)}<small>${tp?Math.round((st[v]||0)*100/tp)+"%":"–"}</small></button>`;
-  $("mb").innerHTML=`<div class="lg">${e(m.league)}</div><div class="tk" style="margin-bottom:12px"><span>${e(m.home)}</span><span>${e(m.away)}</span></div>
-  <div class="pb">${b("1",m.home)}${b("X","Beraberlik")}${b("2",m.away)}</div>
-  <p style="font-size:13px;color:#667">${kil?"Maç başladı, tahmin kapandı.":"Doğru tahmin +10 puan. Maç başlayana kadar değiştirebilirsin."}${tp?` ${tp} kişi tahmin yaptı.`:""}</p>
-  <button class="g" onclick="$('md').style.display='none'">Kapat</button>`;
-  $("md").style.display="flex"}
-async function pick(id,v){
-  const {error}=await sb.from("predictions").upsert({user_id:me.id,match_id:id,pick:v},{onConflict:"user_id,match_id"});
-  if(error)return toast("Tahmin kaydedilemedi");
-  $("md").style.display="none";toast("Tahminin kaydedildi ✓");vMac()}
+/* SPONSORLAR */
+async function vSp(){
+  const {data}=await sb.from("sponsors").select("*").eq("active",true).order("sort").order("id");
+  SPM=Object.fromEntries((data||[]).map(x=>[x.id,x]));
+  const l=(data||[]).map(x=>`<div class="c"><div style="display:flex;gap:10px;align-items:center"><div style="font-size:28px">${x.kind=="kanal"?"📢":"🌐"}</div><div style="flex:1;min-width:0"><b>${e(x.title)}</b>${x.descr?`<div class="lg" style="margin:2px 0 0">${e(x.descr)}</div>`:""}</div></div>
+  <button style="margin-top:10px" onclick="spGit(${x.id})">${x.kind=="kanal"?"Kanala katıl":"Siteye git"}</button></div>`).join("");
+  if(tab=="sp")$("v").innerHTML=l||'<div class="bos">Şu an sponsor yok.</div>'}
+function spGit(id){
+  const u=SPM[id]&&SPM[id].url;if(!u||!okUrl(u))return;
+  if(tg&&/^https:\/\/t\.me\//i.test(u))tg.openTelegramLink(u);else if(tg)tg.openLink(u);else window.open(u,"_blank")}
 
 /* KUPON */
 const TUR=[["tekli","TEKLİ KUPON"],["ikili","2'Lİ KUPON"],["uclu","3'LÜ KUPON"]];
@@ -132,137 +109,23 @@ async function vKup(){
 
 /* TOPLULUK */
 async function vTop(){
+  const seg=`<div class="sg"><button class="${ts2=="chat"?"on":""}" onclick="ts2='chat';vTop()">💬 Sohbet</button><button class="${ts2=="tips"?"on":""}" onclick="ts2='tips';vTop()">📋 Paylaşımlar</button></div>`;
+  if(ts2=="chat"){
+    const {data}=await sb.from("messages").select("*,profiles(username)").order("created_at",{ascending:false}).limit(50);
+    if(tab!="top"||ts2!="chat")return;
+    $("v").innerHTML=seg+`<div class="c" style="padding:10px"><div id="cb" style="height:calc(100dvh - 330px);min-height:240px;overflow-y:auto">${(data||[]).reverse().map(cm).join("")||'<div class="bos" id="ce">Henüz mesaj yok. İlk mesajı sen yaz!</div>'}</div>
+    <div class="row" style="margin-top:8px"><input id="ci" placeholder="Mesaj yaz..." maxlength="300" style="flex:4" onkeydown="if(event.key=='Enter')cSend()"><button style="flex:1" onclick="cSend()">➤</button></div></div>`;
+    const b=$("cb");b.scrollTop=b.scrollHeight;return}
   const {data}=await sb.from("tips").select("*,profiles(username)").order("created_at",{ascending:false}).limit(40);
   const row='<div class="row pr"><input placeholder="Maç (A - B)"><input placeholder="Tahmin"></div>';
   const f=`<div class="c"><b>Tahminini paylaş</b>${row+row+row}<textarea id="nt" rows="2" placeholder="Not (isteğe bağlı)"></textarea><button onclick="paylas()">Paylaş</button></div>`;
-  const l=(data||[]).map(t=>`<div class="c"><div class="lg">@${e(t.profiles&&t.profiles.username)} · ${fz(t.created_at)} ${t.status=="won"?'<span class="pk y">✓ TUTTU</span>':t.status=="lost"?'<span class="pk k">✗ YATTI</span>':""}</div>`+(t.items||[]).map(i=>`<div style="font-weight:700;margin-top:4px">${e(i.mac)} → ${e(i.tahmin)}</div>`).join("")+(t.note?`<div style="margin-top:6px;color:#556">${e(t.note)}</div>`:"")+"</div>").join("");
-  if(tab=="top")$("v").innerHTML=f+(l||'<div class="bos">Henüz paylaşım yok.</div>')}
+  const l=(data||[]).map(t=>`<div class="c"><div class="lg">@${e(t.profiles&&t.profiles.username)} · ${fz(t.created_at)} ${rz(t.status=="won"?"tuttu":t.status=="lost"?"yatti":"")}</div>`+(t.items||[]).map(i=>`<div style="font-weight:700;margin-top:4px">${e(i.mac)} → ${e(i.tahmin)}</div>`).join("")+(t.note?`<div style="margin-top:6px;color:#556">${e(t.note)}</div>`:"")+"</div>").join("");
+  if(tab=="top"&&ts2=="tips")$("v").innerHTML=seg+f+(l||'<div class="bos">Henüz paylaşım yok.</div>')}
 async function paylas(){
   const items=[...document.querySelectorAll(".pr")].map(r=>({mac:r.children[0].value.trim(),tahmin:r.children[1].value.trim()})).filter(x=>x.mac&&x.tahmin);
   if(!items.length)return toast("En az bir maç ve tahmin yaz");
   const {error}=await sb.from("tips").insert({user_id:me.id,note:$("nt").value.trim(),items});
   toast(error?"Paylaşılamadı":"Paylaşıldı ✓");vTop()}
-
-/* SIRALAMA */
-async function vSir(){
-  const {data}=await sb.rpc("leaderboard",{period:per});
-  const P=[["week","Haftalık"],["month","Aylık"],["year","Yıllık"],["all","Tüm Zaman"]];
-  if(tab=="sir")$("v").innerHTML=`<div class="sg">${P.map(([k,n])=>`<button class="${k==per?"on":""}" onclick="per='${k}';vSir()">${n}</button>`).join("")}</div><div class="c">`+((data||[]).map((r,i)=>`<div class="lb"><b>${i+1}</b><span>${i<3?["🥇","🥈","🥉"][i]+" ":""}${e(r.username)}${r.user_id==me.id?" (sen)":""}</span><b>${r.total}</b></div>`).join("")||'<div class="bos">Henüz puan yok.</div>')+"</div>"}
-
-/* PROFIL */
-async function vPro(){
-  const [r,l,p,pf]=await Promise.all([
-    sb.from("profiles").select("id",{count:"exact",head:true}).eq("referred_by",me.id),
-    sb.from("points_log").select("*").order("created_at",{ascending:false}).limit(10),
-    sb.from("predictions").select("result"),
-    sb.from("profiles").select("points").eq("id",me.id).single()]);
-  if(pf.data){prof.points=pf.data.points;$("pt").textContent="⭐ "+prof.points}
-  const pr=p.data||[],w=pr.filter(x=>x.result=="won").length,t=pr.filter(x=>x.result).length;
-  const link=location.origin+location.pathname+"?ref="+prof.ref_code;
-  const lg=(l.data||[]).map(x=>`<div class="lb"><span>${e(x.reason)}</span><b>+${x.points}</b></div>`).join("")||'<div class="bos">Henüz puan yok.</div>';
-  if(tab=="pro")$("v").innerHTML=`<div class="c"><h2 style="margin:0">@${e(prof.username)}</h2><div class="lg">${e(me.email)}</div>
-  <div class="row" style="margin-top:12px;text-align:center"><div><b style="font-size:24px">${prof.points}</b><div class="lg">Puan</div></div><div><b style="font-size:24px">${w}/${t}</b><div class="lg">Doğru</div></div><div><b style="font-size:24px">${r.count||0}</b><div class="lg">Davet</div></div></div></div>
-  <div class="c"><b>Davet et, kişi başı +50 puan kazan</b><div class="lg" style="margin-top:6px">Kodun: <b>${e(prof.ref_code)}</b></div><input readonly value="${e(link)}"><button onclick="navigator.clipboard&&navigator.clipboard.writeText('${link}');toast('Link kopyalandı')">Linki kopyala</button></div>
-  <div class="c"><b>Son puanlar</b>${lg}</div><button class="g" onclick="sb.auth.signOut()">Çıkış yap</button>`}
-
-/* ADMIN */
-async function vAdm(){
-  const [m,c,t]=await Promise.all([
-    sb.from("matches").select("*").neq("status","FT").order("kickoff").limit(30),
-    sb.from("coupons").select("*").order("gun",{ascending:false}).order("id",{ascending:false}).limit(12),
-    sb.from("tips").select("*,profiles(username)").eq("status","pending").order("created_at").limit(30)]);
-  CP=Object.fromEntries((c.data||[]).map(x=>[x.id,x]));
-  const so=v=>["NS","LIVE","FT"].map(s=>`<option ${s==v?"selected":""}>${s}</option>`).join("");
-  const mh=(m.data||[]).map(x=>`<div class="c"><div class="lg">${e(x.league)} · ${fz(x.kickoff)}</div><b>${e(x.home)} – ${e(x.away)}</b>
-  <div class="row"><select id="s${x.id}">${so(x.status)}</select><input id="d${x.id}" placeholder="Dakika" value="${e(x.minute)}"></div>
-  <div class="row"><input id="h${x.id}" type="number" placeholder="Ev skor" value="${x.home_score??""}"><input id="a${x.id}" type="number" placeholder="Dep skor" value="${x.away_score??""}"></div>
-  <div class="row"><button onclick="gunc(${x.id})">Kaydet</button><button class="r" onclick="msil(${x.id})">Sil</button></div></div>`).join("");
-  const ch=(c.data||[]).map(x=>`<div class="c"><b>${x.gun} · ${x.tur}</b>`+(x.items||[]).map((i,n)=>`<div style="margin-top:8px">${e(i.ev)} – ${e(i.dep)}: ${e(i.tahmin)}<select onchange="setD(${x.id},${n},this.value)"><option value="">⏳ Bekliyor</option><option value="tuttu" ${i.durum=="tuttu"?"selected":""}>✅ Tuttu</option><option value="yatti" ${i.durum=="yatti"?"selected":""}>❌ Yattı</option></select></div>`).join("")+`<button class="r" onclick="ksil(${x.id})">Kuponu sil</button></div>`).join("");
-  const th=(t.data||[]).map(x=>`<div class="c"><div class="lg">@${e(x.profiles&&x.profiles.username)}</div>`+(x.items||[]).map(i=>`<div style="font-weight:700">${e(i.mac)} → ${e(i.tahmin)}</div>`).join("")+`<div class="row"><button onclick="tdur(${x.id},'won')">✅ Tuttu</button><button class="r" onclick="tdur(${x.id},'lost')">❌ Yattı</button></div></div>`).join("");
-  if(tab=="adm")$("v").innerHTML=`<div class="c"><b>Maç ekle</b><input id="al" placeholder="Lig"><input id="ah" placeholder="Ev sahibi"><input id="aa" placeholder="Deplasman"><input id="ak" type="datetime-local"><button onclick="mekle()">Maçı ekle</button></div>
-  <div class="c"><b>Kupon ekle</b><input id="kd" type="date" value="${key(new Date())}"><select id="ku"><option value="tekli">Tekli</option><option value="ikili">2'li</option><option value="uclu">3'lü</option></select>
-  <textarea id="kt" rows="4" placeholder="Her satıra bir maç:&#10;Lig | Ev | Dep | Saat | Tahmin | Güven"></textarea><button onclick="kekle()">Kuponu ekle</button></div>
-  <h3>Maçları güncelle</h3>${mh||'<div class="bos">Güncellenecek maç yok.</div>'}
-  <h3>Kuponlar</h3>${ch||'<div class="bos">Kupon yok.</div>'}
-  <h3>Bekleyen paylaşımlar</h3>${th||'<div class="bos">Bekleyen yok.</div>'}`}
-async function mekle(){
-  const k=$("ak").value;if(!$("ah").value||!$("aa").value||!k)return toast("Eksik alan var");
-  const {error}=await sb.from("matches").insert({league:$("al").value,home:$("ah").value,away:$("aa").value,kickoff:new Date(k).toISOString()});
-  toast(error?error.message:"Maç eklendi");vAdm()}
-async function gunc(id){
-  const s=$("s"+id).value,h=$("h"+id).value,a=$("a"+id).value;
-  if(s=="FT"&&(h===""||a===""))return toast("Biten maç için skoru gir");
-  const {error}=await sb.from("matches").update({status:s,minute:$("d"+id).value,home_score:h===""?null:+h,away_score:a===""?null:+a}).eq("id",id);
-  toast(error?error.message:"Güncellendi");vAdm()}
-async function msil(id){if(confirm("Maç silinsin mi?")){await sb.from("matches").delete().eq("id",id);vAdm()}}
-async function kekle(){
-  const items=$("kt").value.split("\n").map(l=>l.split("|").map(x=>x.trim())).filter(a=>a.length>=5).map(a=>({lig:a[0],ev:a[1],dep:a[2],saat:a[3],tahmin:a[4],guven:+a[5]||70,durum:""}));
-  if(!items.length||!$("kd").value)return toast("Tarih ve maç satırı gerekli");
-  const {error}=await sb.from("coupons").insert({gun:$("kd").value,tur:$("ku").value,items});
-  toast(error?error.message:"Kupon eklendi");vAdm()}
-async function setD(id,i,v){const c=CP[id];c.items[i].durum=v;const {error}=await sb.from("coupons").update({items:c.items}).eq("id",id);toast(error?error.message:"Kaydedildi")}
-async function ksil(id){if(confirm("Kupon silinsin mi?")){await sb.from("coupons").delete().eq("id",id);vAdm()}}
-async function tdur(id,s){await sb.from("tips").update({status:s}).eq("id",id);toast("İşaretlendi");vAdm()}
-/* ADMIN EKSTRA */
-const _vAdm=vAdm;
-vAdm=async function(){
-  await _vAdm();
-  if(tab!="adm")return;
-  const [s,st]=await Promise.all([sb.rpc("admin_stats"),sb.from("settings").select("*")]);
-  const S=s.data||{},ST=Object.fromEntries((st.data||[]).map(x=>[x.key,x.value]));
-  const k=(n,l)=>`<div class="c" style="margin:0;text-align:center"><b style="font-size:24px">${n??0}</b><div class="lg">${l}</div></div>`;
-  const x=`<h3>📊 İstatistik</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">${k(S.toplam,"Toplam üye")}${k(S.bugun,"Bugün katılan")}${k(S.aktif1,"Aktif (24 saat)")}${k(S.aktif7,"Aktif (7 gün)")}${k(S.tahmin,"Toplam tahmin")}${k(S.paylasim,"Toplam paylaşım")}</div>
-  <div class="lg" style="margin:6px 4px">Aktif: o sürede tahmin yapan ya da paylaşım ekleyen üye.</div>
-  <h3>⚙️ Puan ayarları</h3><div class="c">
-  <div class="lg">Davet başına referans puanı</div><input id="sr" type="number" value="${ST.ref_points??50}">
-  <div class="lg">Doğru tahmin puanı</div><input id="sw" type="number" value="${ST.win_points??10}">
-  <div class="lg">Tutan paylaşım puanı</div><input id="st" type="number" value="${ST.tip_points??20}">
-  <button onclick="sKaydet()">Ayarları kaydet</button></div>
-  <h3>👥 Üye yönetimi</h3><div class="c"><input id="uq" placeholder="Kullanıcı adı veya e-posta ara"><button onclick="uAra()">Ara / Son üyeleri göster</button><div id="au"></div></div>`;
-  $("v").insertAdjacentHTML("afterbegin",x);
-};
-async function sKaydet(){
-  const {error}=await sb.from("settings").upsert([{key:"ref_points",value:+$("sr").value},{key:"win_points",value:+$("sw").value},{key:"tip_points",value:+$("st").value}]);
-  toast(error?error.message:"Ayarlar kaydedildi")}
-async function uAra(){
-  const {data}=await sb.rpc("admin_users",{q:$("uq").value.trim()});
-  $("au").innerHTML=(data||[]).map(u=>`<div class="c" style="margin:8px 0;background:#f1f4fa"><b>@${e(u.username)}</b> · ⭐ ${u.points}<div class="lg">${e(u.email)}</div>
-  <div class="row"><input id="p${u.id}" type="number" placeholder="+50 ya da -20"><input id="r${u.id}" placeholder="Neden"></div>
-  <button onclick="pEkle('${u.id}')">Puanı uygula</button></div>`).join("")||'<div class="bos">Üye bulunamadı.</div>'}
-async function pEkle(id){
-  const v=parseInt($("p"+id).value);if(!v)return toast("Puan gir");
-  const {error}=await sb.rpc("admin_add_points",{uid:id,pts:v,why:$("r"+id).value.trim()||"admin düzeltme"});
-  toast(error?error.message:"Puan uygulandı");uAra()}
-/* TELEGRAM DAVET LİNKİ */
-const BOT="goleoaibot";
-const _vPro=vPro;
-vPro=async function(){
-  await _vPro();
-  if(tab!="pro")return;
-  const l="https://t.me/"+BOT+"?startapp="+prof.ref_code;
-  const i=document.querySelector("#v input[readonly]");
-  if(i)i.value=l;
-  const b=[...document.querySelectorAll("#v button")].find(x=>(x.getAttribute("onclick")||"").includes("clipboard"));
-  if(b){
-    b.onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText(l);toast("Link kopyalandı")};
-    b.insertAdjacentHTML("afterend",'<button id="tgs" class="g">Telegram\'da paylaş</button>');
-    $("tgs").onclick=()=>{
-      const u="https://t.me/share/url?url="+encodeURIComponent(l)+"&text="+encodeURIComponent("Goleo'da tahmin yap, puan kazan! 🏆");
-      tg?tg.openTelegramLink(u):window.open(u)};
-  }
-};
-/* CANLI SOHBET */
-let ts2="chat";
-const _vTop=vTop;
-vTop=async function(){
-  const seg=`<div class="sg"><button class="${ts2=="chat"?"on":""}" onclick="ts2='chat';vTop()">💬 Sohbet</button><button class="${ts2=="tips"?"on":""}" onclick="ts2='tips';vTop()">📋 Paylaşımlar</button></div>`;
-  if(ts2=="tips"){await _vTop();if(tab=="top")$("v").insertAdjacentHTML("afterbegin",seg);return}
-  const {data}=await sb.from("messages").select("*,profiles(username)").order("created_at",{ascending:false}).limit(50);
-  if(tab!="top"||ts2!="chat")return;
-  $("v").innerHTML=seg+`<div class="c" style="padding:10px"><div id="cb" style="height:calc(100dvh - 330px);min-height:240px;overflow-y:auto">${(data||[]).reverse().map(cm).join("")||'<div class="bos" id="ce">Henüz mesaj yok. İlk mesajı sen yaz!</div>'}</div>
-  <div class="row" style="margin-top:8px"><input id="ci" placeholder="Mesaj yaz..." maxlength="300" style="flex:4" onkeydown="if(event.key=='Enter')cSend()"><button style="flex:1" onclick="cSend()">➤</button></div></div>`;
-  const b=$("cb");b.scrollTop=b.scrollHeight;
-};
 function cm(m){
   const mine=m.user_id==me.id;
   return `<div id="m${m.id}" style="display:flex;justify-content:${mine?"flex-end":"flex-start"};margin:6px 0"><div style="max-width:80%;background:${mine?"#1b4fd8":"#f1f4fa"};color:${mine?"#fff":"#111"};border-radius:14px;padding:8px 12px">
@@ -287,4 +150,84 @@ sb.channel("chat")
  .on("postgres_changes",{event:"DELETE",schema:"public",table:"messages"},p=>{const x=$("m"+p.old.id);if(x)x.remove()})
  .subscribe();
 
+/* SIRALAMA */
+async function vSir(){
+  const {data}=await sb.rpc("leaderboard",{period:per});
+  const P=[["week","Haftalık"],["month","Aylık"],["year","Yıllık"],["all","Tüm Zaman"]];
+  if(tab=="sir")$("v").innerHTML=`<div class="sg">${P.map(([k,n])=>`<button class="${k==per?"on":""}" onclick="per='${k}';vSir()">${n}</button>`).join("")}</div><div class="c">`+((data||[]).map((r,i)=>`<div class="lb"><b>${i+1}</b><span>${i<3?["🥇","🥈","🥉"][i]+" ":""}${e(r.username)}${r.user_id==me.id?" (sen)":""}</span><b>${r.total}</b></div>`).join("")||'<div class="bos">Henüz puan yok.</div>')+"</div>"}
+
+/* PROFIL */
+async function vPro(){
+  const [r,l,pf]=await Promise.all([
+    sb.from("profiles").select("id",{count:"exact",head:true}).eq("referred_by",me.id),
+    sb.from("points_log").select("*").order("created_at",{ascending:false}).limit(10),
+    sb.from("profiles").select("points").eq("id",me.id).single()]);
+  if(pf.data){prof.points=pf.data.points;$("pt").textContent="⭐ "+prof.points}
+  RL=BOT?"https://t.me/"+BOT+"?startapp="+prof.ref_code:location.origin+location.pathname+"?ref="+prof.ref_code;
+  const lg=(l.data||[]).map(x=>`<div class="lb"><span>${e(x.reason)}</span><b>${x.points>0?"+":""}${x.points}</b></div>`).join("")||'<div class="bos">Henüz puan yok.</div>';
+  if(tab=="pro")$("v").innerHTML=`<div class="c"><h2 style="margin:0">@${e(prof.username)}</h2><div class="lg">${e(me.email)}</div>
+  <div class="row" style="margin-top:12px;text-align:center"><div><b style="font-size:24px">${prof.points}</b><div class="lg">Puan</div></div><div><b style="font-size:24px">${r.count||0}</b><div class="lg">Davet</div></div></div></div>
+  <div class="c"><b>Davet et, kişi başı puan kazan</b><div class="lg" style="margin-top:6px">Kodun: <b>${e(prof.ref_code)}</b></div><input readonly value="${e(RL)}">
+  <button onclick="kopyala()">Linki kopyala</button>${BOT?'<button class="g" onclick="tgPaylas()">Telegram\'da paylaş</button>':""}</div>
+  <div class="c"><b>Son puanlar</b>${lg}</div><button class="g" onclick="sb.auth.signOut()">Çıkış yap</button>`}
+function kopyala(){navigator.clipboard&&navigator.clipboard.writeText(RL);toast("Link kopyalandı")}
+function tgPaylas(){const u="https://t.me/share/url?url="+encodeURIComponent(RL)+"&text="+encodeURIComponent("Goleo'da puan topla! 🏆");tg?tg.openTelegramLink(u):window.open(u)}
+
+/* ADMIN */
+async function vAdm(){
+  const [s,st,c,t,sp]=await Promise.all([
+    sb.rpc("admin_stats"),
+    sb.from("settings").select("*"),
+    sb.from("coupons").select("*").order("gun",{ascending:false}).order("id",{ascending:false}).limit(12),
+    sb.from("tips").select("*,profiles(username)").eq("status","pending").order("created_at").limit(30),
+    sb.from("sponsors").select("*").order("sort").order("id")]);
+  const S=s.data||{},ST=Object.fromEntries((st.data||[]).map(x=>[x.key,x.value]));
+  CP=Object.fromEntries((c.data||[]).map(x=>[x.id,x]));
+  const k=(n,l)=>`<div class="c" style="margin:0;text-align:center"><b style="font-size:24px">${n??0}</b><div class="lg">${l}</div></div>`;
+  const sph=(sp.data||[]).map(x=>`<div class="c" style="background:#f1f4fa;margin:8px 0"><b>${x.kind=="kanal"?"📢":"🌐"} ${e(x.title)}</b>${x.active?"":" (kapalı)"}<div class="lg">${e(x.url)}</div>
+  <div class="row"><button class="g" onclick="spTog(${x.id},${!x.active})">${x.active?"Kapat":"Aç"}</button><button class="r" onclick="spSil(${x.id})">Sil</button></div></div>`).join("");
+  const ch=(c.data||[]).map(x=>`<div class="c"><b>${x.gun} · ${x.tur}</b>`+(x.items||[]).map((i,n)=>`<div style="margin-top:8px">${e(i.ev)} – ${e(i.dep)}: ${e(i.tahmin)}<select onchange="setD(${x.id},${n},this.value)"><option value="">⏳ Bekliyor</option><option value="tuttu" ${i.durum=="tuttu"?"selected":""}>✅ Tuttu</option><option value="yatti" ${i.durum=="yatti"?"selected":""}>❌ Yattı</option></select></div>`).join("")+`<button class="r" onclick="ksil(${x.id})">Kuponu sil</button></div>`).join("");
+  const th=(t.data||[]).map(x=>`<div class="c"><div class="lg">@${e(x.profiles&&x.profiles.username)}</div>`+(x.items||[]).map(i=>`<div style="font-weight:700">${e(i.mac)} → ${e(i.tahmin)}</div>`).join("")+`<div class="row"><button onclick="tdur(${x.id},'won')">✅ Tuttu</button><button class="r" onclick="tdur(${x.id},'lost')">❌ Yattı</button></div></div>`).join("");
+  if(tab!="adm")return;
+  $("v").innerHTML=`<h3>📊 İstatistik</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">${k(S.toplam,"Toplam üye")}${k(S.bugun,"Bugün katılan")}${k(S.aktif1,"Aktif (24 saat)")}${k(S.aktif7,"Aktif (7 gün)")}${k(S.mesaj,"Toplam mesaj")}${k(S.paylasim,"Toplam paylaşım")}</div>
+  <div class="lg" style="margin:6px 4px">Aktif: o sürede mesaj yazan ya da paylaşım ekleyen üye.</div>
+  <h3>⚙️ Puan ayarları</h3><div class="c">
+  <div class="lg">Davet başına referans puanı</div><input id="sr" type="number" value="${ST.ref_points??50}">
+  <div class="lg">Tutan paylaşım puanı</div><input id="st" type="number" value="${ST.tip_points??20}">
+  <button onclick="sKaydet()">Ayarları kaydet</button></div>
+  <h3>👥 Üye yönetimi</h3><div class="c"><input id="uq" placeholder="Kullanıcı adı veya e-posta ara"><button onclick="uAra()">Ara / Son üyeleri göster</button><div id="au"></div></div>
+  <h3>🤝 Sponsorlar</h3><div class="c"><select id="sk1"><option value="kanal">📢 Telegram kanalı</option><option value="site">🌐 Web sitesi</option></select>
+  <input id="sn1" placeholder="Ad"><input id="sl1" placeholder="Link (https://t.me/... ya da https://...)"><input id="sd1" placeholder="Kısa açıklama (isteğe bağlı)"><input id="so1" type="number" placeholder="Sıra (küçük olan önce)">
+  <button onclick="spEkle()">Sponsor ekle</button>${sph}</div>
+  <h3>🎫 Kupon ekle</h3><div class="c"><input id="kd" type="date" value="${key(new Date())}"><select id="ku"><option value="tekli">Tekli</option><option value="ikili">2'li</option><option value="uclu">3'lü</option></select>
+  <textarea id="kt" rows="4" placeholder="Her satıra bir maç:&#10;Lig | Ev | Dep | Saat | Tahmin | Güven"></textarea><button onclick="kekle()">Kuponu ekle</button></div>
+  <h3>Kuponlar</h3>${ch||'<div class="bos">Kupon yok.</div>'}
+  <h3>Bekleyen paylaşımlar</h3>${th||'<div class="bos">Bekleyen yok.</div>'}`}
+async function sKaydet(){
+  const {error}=await sb.from("settings").upsert([{key:"ref_points",value:+$("sr").value},{key:"tip_points",value:+$("st").value}]);
+  toast(error?error.message:"Ayarlar kaydedildi")}
+async function uAra(){
+  const {data}=await sb.rpc("admin_users",{q:$("uq").value.trim()});
+  $("au").innerHTML=(data||[]).map(u=>`<div class="c" style="margin:8px 0;background:#f1f4fa"><b>@${e(u.username)}</b> · ⭐ ${u.points}<div class="lg">${e(u.email)}</div>
+  <div class="row"><input id="p${u.id}" type="number" placeholder="+50 ya da -20"><input id="r${u.id}" placeholder="Neden"></div>
+  <button onclick="pEkle('${u.id}')">Puanı uygula</button></div>`).join("")||'<div class="bos">Üye bulunamadı.</div>'}
+async function pEkle(id){
+  const v=parseInt($("p"+id).value);if(!v)return toast("Puan gir");
+  const {error}=await sb.rpc("admin_add_points",{uid:id,pts:v,why:$("r"+id).value.trim()||"admin düzeltme"});
+  toast(error?error.message:"Puan uygulandı");uAra()}
+async function spEkle(){
+  const row={kind:$("sk1").value,title:$("sn1").value.trim(),url:$("sl1").value.trim(),descr:$("sd1").value.trim()||null,sort:+$("so1").value||0};
+  if(!row.title||!okUrl(row.url))return toast("Ad ve https:// ile başlayan link gerekli");
+  const {error}=await sb.from("sponsors").insert(row);
+  toast(error?error.message:"Sponsor eklendi");vAdm()}
+async function spTog(id,a){await sb.from("sponsors").update({active:a}).eq("id",id);vAdm()}
+async function spSil(id){if(confirm("Sponsor silinsin mi?")){await sb.from("sponsors").delete().eq("id",id);vAdm()}}
+async function kekle(){
+  const items=$("kt").value.split("\n").map(l=>l.split("|").map(x=>x.trim())).filter(a=>a.length>=5).map(a=>({lig:a[0],ev:a[1],dep:a[2],saat:a[3],tahmin:a[4],guven:+a[5]||70,durum:""}));
+  if(!items.length||!$("kd").value)return toast("Tarih ve maç satırı gerekli");
+  const {error}=await sb.from("coupons").insert({gun:$("kd").value,tur:$("ku").value,items});
+  toast(error?error.message:"Kupon eklendi");vAdm()}
+async function setD(id,i,v){const c=CP[id];c.items[i].durum=v;const {error}=await sb.from("coupons").update({items:c.items}).eq("id",id);toast(error?error.message:"Kaydedildi")}
+async function ksil(id){if(confirm("Kupon silinsin mi?")){await sb.from("coupons").delete().eq("id",id);vAdm()}}
+async function tdur(id,s){await sb.from("tips").update({status:s}).eq("id",id);toast("İşaretlendi");vAdm()}
 </script></body></html>
