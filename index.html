@@ -335,5 +335,33 @@ async function cIptal(id){
   if(!confirm("Çekiliş iptal edilsin mi?"))return;
   const {error}=await sb.rpc("raffle_cancel",{rid:id});
   toast(error?error.message:"İptal edildi");vAdm()}
+/* KUPON FORMU (AYRI KUTULAR) */
+const _vAdmK=vAdm;
+vAdm=async function(){
+  await _vAdmK();
+  if(tab!="adm")return;
+  const t=$("kt");if(!t)return;
+  t.style.display="none";
+  t.insertAdjacentHTML("beforebegin",'<div id="krw"></div>');
+  $("ku").onchange=krCiz;krCiz();
+};
+function krCiz(){
+  const n={tekli:1,ikili:2,uclu:3}[$("ku").value]||1;
+  const old=[...document.querySelectorAll(".kr")].map(r=>[...r.querySelectorAll("input")].map(i=>i.value));
+  $("krw").innerHTML=Array.from({length:n},(_,i)=>`<div class="kr c" style="background:#f1f4fa;margin:8px 0"><b>${i+1}. Maç</b>
+  <input class="k-lig" placeholder="Lig (örn. Süper Lig)">
+  <div class="row"><input class="k-ev" placeholder="Ev sahibi"><input class="k-dep" placeholder="Deplasman"></div>
+  <div class="row"><input class="k-saat" type="time"><input class="k-guven" type="number" min="1" max="100" placeholder="Güven %"></div>
+  <input class="k-tahmin" placeholder="Tahmin (örn. MS 1, 2.5 Üst)"></div>`).join("");
+  document.querySelectorAll(".kr").forEach((r,i)=>{(old[i]||[]).forEach((v,j)=>{r.querySelectorAll("input")[j].value=v})});
+}
+async function kekle(){
+  const items=[...document.querySelectorAll(".kr")].map(r=>{
+    const g=c=>r.querySelector(".k-"+c).value.trim();
+    return {lig:g("lig"),ev:g("ev"),dep:g("dep"),saat:g("saat"),tahmin:g("tahmin"),guven:+g("guven")||70,durum:""}});
+  if(items.some(m=>!m.ev||!m.dep||!m.tahmin))return toast("Her maç için ev sahibi, deplasman ve tahmin gerekli");
+  if(!$("kd").value)return toast("Tarih seç");
+  const {error}=await sb.from("coupons").insert({gun:$("kd").value,tur:$("ku").value,items});
+  toast(error?error.message:"Kupon eklendi");vAdm()}
 
 </script></body></html>
