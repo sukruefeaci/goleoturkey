@@ -706,8 +706,8 @@ function fCiz(){
   const G={};L.forEach(m=>{const l=m.lig||"Diğer";(G[l]=G[l]||[]).push(m)});
   const K=Object.keys(G).sort((a,b)=>lPri(a)-lPri(b)||a.localeCompare(b,"tr"));
   $("fl").innerHTML=(fErr?`<div class="c lg" style="text-align:center;color:#FB923C">${e(fErr)}</div>`:"")+(K.map(l=>`<div class="c fk"><div class="fkh">${e(l)}</div>${G[l].map(m=>{
-    const D=fDur(m),a=sk(m.s1),b=sk(m.s2),c=D.s=="cn"?"cn":"",w=D.s=="bt"&&a&&b&&a!=b;
-    return `<div class="fr"><div class="fm ${c}">${e(D.t)}</div><div class="ft"><div class="${w&&+a<+b?"fw":""}">${e(m.ev)}</div><div class="${w&&+b<+a?"fw":""}">${e(m.dep)}</div></div><div class="fs ${c}"><div>${a||(D.s=="bs"?"":"-")}</div><div>${b||(D.s=="bs"?"":"-")}</div></div></div>`}).join("")}</div>`).join("")
+    const D=fDur(m),gs=D.s=='cn'||D.s=='bt',a=gs?sk(m.s1):"",b=gs?sk(m.s2):"",c=D.s=="cn"?"cn":"",w=D.s=="bt"&&a&&b&&a!=b;
+    return `<div class="fr"><div class="fm ${c}">${e(D.t)}${m.iy&&gs?`<div style="font-size:10px;color:var(--mut);font-weight:600">İY ${e(m.iy)}</div>`:""}</div><div class="ft"><div class="${w&&+a<+b?"fw":""}">${e(m.ev)}</div><div class="${w&&+b<+a?"fw":""}">${e(m.dep)}</div></div><div class="fs ${c}"><div>${a}</div><div>${b}</div></div></div>`}).join("")}</div>`).join("")
     ||bos(fF=="cn"?"Şu an canlı maç yok.":q?"Aramana uygun maç yok.":"Bu gün için maç bulunamadı."));
   const at=$("fat");if(at)at.textContent=fAt?"Son güncelleme "+new Date(fAt).toLocaleTimeString("tr-TR")+(key(fg)==key(new Date())?" · 30 sn'de bir yenilenir":""):"";
 }
