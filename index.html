@@ -504,5 +504,74 @@ async function plEkle(){
   if(!row.title||!(row.days>0)||$("np-p").value===""||!(row.price>=0))return toast("Ad, gün ve puan gerekli");
   const {error}=await sb.from("vip_plans").insert(row);
   toast(error?error.message:"Paket eklendi");vAdm()}
+/* BILDIRIM BAGLANTISI */
+const _start=start;
+start=async function(){
+  await _start();
+  if(!me||!tg||!tg.initData)return;
+  try{
+    const f=Object.fromEntries(new URLSearchParams(tg.initData));
+    await sb.rpc("tg_link",{f});
+    const u=tg.initDataUnsafe&&tg.initDataUnsafe.user;
+    if(u&&u.allows_write_to_pm===false&&tg.requestWriteAccess)tg.requestWriteAccess();
+  }catch(x){}
+};
+
+/* DUYURU SEKMESI */
+const SAN=["📅 Kuponlar","👑 VIP","🎁 Çekiliş","💎 Paket"];
+const SAB=["📅 Yeni kuponlar yayında! Kupon sekmesine göz at.","👑 Yeni VIP tahminler eklendi! Kupon › VIP bölümünde.","🎁 Yeni çekiliş başladı! Profil sekmesinden katılabilirsin.","💎 Puan paketlerinde kampanya var, Profil sekmesine bak."];
+let dBusy=false;
+function aChips(){
+  const T=[["ozet","📊 Özet"],["kupon","🎫 Kupon"],["vip","👑 VIP"],["sponsor","🤝 Sponsor"],["cekilis","🎁 Çekiliş"],["uye","👥 Üyeler"],["duyuru","📣 Duyuru"],["ayar","⚙️ Ayarlar"]];
+  return `<div class="ch">${T.map(([k,n])=>`<button class="${k==aT?"on":""}" onclick="aT='${k}';vAdm()">${n}</button>`).join("")}</div>`}
+const _vAdmD=vAdm;
+vAdm=async function(){
+  if(aT=="duyuru"){$("v").innerHTML=aChips()+'<div id="ab"></div>';return aDuyuru()}
+  await _vAdmD();
+  const c=document.querySelector("#v .ch");
+  if(c&&tab=="adm")c.outerHTML=aChips();
+};
+async function aDuyuru(){
+  const [tc,pc,hs]=await Promise.all([
+    sb.from("tg_chats").select("user_id",{count:"exact",head:true}),
+    sb.from("profiles").select("id",{count:"exact",head:true}),
+    sb.from("announcements").select("*,profiles(username)").order("id",{ascending:false}).limit(15)]);
+  const hist=(hs.data||[]).map(x=>`<div class="c" style="padding:10px"><div class="lg">${x.kind=="herkes"?"📣 Herkes":x.kind=="vip"?"👑 VIP üyeler":"💬 @"+e(x.profiles&&x.profiles.username)} · ${fz(x.created_at)} · ${x.sent}/${x.total}</div><div style="white-space:pre-line;font-size:14px">${e(x.body)}</div></div>`).join("");
+  ab(`<div class="c"><b>📣 Toplu duyuru</b><div class="lg">Telegram bağlı üye: ${tc.count||0} / ${pc.count||0} · Üye, uygulamayı Telegram'dan açınca bağlanır.</div>
+  <select id="dau-s"><option value="herkes">Herkese</option><option value="vip">Sadece aktif VIP üyelere</option></select>
+  <div class="ch" style="margin:6px 0">${SAN.map((t,i)=>`<button onclick="$('dtx').value=SAB[${i}]">${t}</button>`).join("")}</div>
+  <textarea id="dtx" rows="4" maxlength="1000" placeholder="Duyuru metni"></textarea>
+  <button onclick="dGonder()">📣 Gönder</button><div id="dprog" class="lg"></div></div>
+  <div class="c"><b>💬 Kişiye özel mesaj</b><input id="dq" placeholder="Kullanıcı adı veya e-posta"><button onclick="dAra()">Ara</button><div id="dres"></div></div>
+  <h3>Son gönderimler</h3>${hist||bos("Henüz gönderim yok.")}`)}
+async function dGonder(){
+  if(dBusy)return;
+  const msg=$("dtx").value.trim(),aud=$("dau-s").value;
+  if(!msg)return toast("Mesaj yaz");
+  const {data:n}=await sb.rpc("admin_audience_count",{aud});
+  if(!n)return toast("Bu kitlede Telegram bağlantısı olan üye yok");
+  if(!confirm(n+" kişiye gönderilsin mi?\n\n"+msg))return;
+  dBusy=true;
+  const {data:st,error}=await sb.rpc("admin_broadcast_start",{msg,aud});
+  if(error||!st){dBusy=false;return toast("Başlatılamadı")}
+  let sent=0,done=false;
+  while(!done){
+    const {data,error:e2}=await sb.rpc("admin_broadcast_batch",{bid:st.id});
+    if(e2||!data){toast("Gönderim yarıda kesildi");break}
+    sent=data.sent;done=data.done;
+    const p=$("dprog");if(p)p.textContent="Gönderiliyor: "+sent+"/"+data.total;
+    if(!done)await new Promise(r=>setTimeout(r,1200));
+  }
+  dBusy=false;toast("Gönderildi: "+sent+" kişi");
+  if(tab=="adm"&&aT=="duyuru")vAdm()}
+async function dAra(){
+  const {data}=await sb.rpc("admin_users",{q:$("dq").value.trim()});
+  $("dres").innerHTML=(data||[]).map(u=>`<div class="c" style="margin:8px 0;background:#f1f4fa"><b>@${e(u.username)}</b><div class="lg">${e(u.email)}</div>
+  <textarea id="dm${u.id}" rows="2" maxlength="1000" placeholder="Mesaj"></textarea><button onclick="dKisi('${u.id}')">Gönder</button></div>`).join("")||bos("Üye bulunamadı.")}
+async function dKisi(id){
+  const msg=$("dm"+id).value.trim();if(!msg)return toast("Mesaj yaz");
+  const {data,error}=await sb.rpc("admin_send",{uid:id,msg});
+  if(error||!data)return toast("Gönderilemedi");
+  toast(data.msg);if(data.ok)$("dm"+id).value=""}
 
 </script></body></html>
