@@ -1,50 +1,84 @@
 <!DOCTYPE html>
 <html lang="tr"><head>
 <meta charset="utf-8">
+<meta name="theme-color" content="#09070F">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Goleo</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.js"></script>
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#e9edf3;color:#111;font-family:-apple-system,Segoe UI,Roboto,sans-serif;padding-bottom:84px}
-header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px 6px}
-header h1{margin:0;font-size:26px;letter-spacing:2px}
-.pt{background:#1b4fd8;color:#fff;border-radius:20px;padding:6px 12px;font-weight:700;font-size:14px}
-#v{padding:8px 14px}
-.c{background:#fff;border-radius:16px;padding:14px;margin-bottom:12px}
-.mac{background:#fff;border-radius:16px;padding:12px 14px;margin-bottom:10px}
-.lg{font-size:12px;color:#667;margin-bottom:4px}
-.tk{font-weight:700;font-size:16px;display:flex;justify-content:space-between;gap:8px}
-.pk{display:inline-block;margin-top:6px;font-size:12px;font-weight:700;background:#e9edf3;border-radius:8px;padding:4px 8px}
-.y{background:#1a8f3c;color:#fff}.k{background:#d33;color:#fff}
-h3{margin:14px 4px 8px;font-size:15px;color:#445}
-input,select,textarea,button{font:inherit;font-size:16px;padding:10px;border:1px solid #ccd;border-radius:10px;width:100%;margin:4px 0;background:#fff;color:#111}
-button{background:#1b4fd8;color:#fff;border:0;font-weight:700}
-button.g{background:#667}button.r{background:#d33}
-button:disabled{opacity:.5}
-nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:#fffe;backdrop-filter:blur(8px);border-top:1px solid #dde;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
-nav a{flex:1;text-align:center;font-size:11px;font-weight:700;color:#778;padding:4px 0}
-nav a i{display:block;font-style:normal;font-size:20px}
-nav a.on{color:#1b4fd8}
-.sg{display:flex;gap:6px;margin-bottom:10px}
-.sg button{padding:8px 4px;font-size:13px;background:#fff;color:#334}
-.sg button.on{background:#1b4fd8;color:#fff}
-.ch{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
-.ch button{width:auto;flex:none;padding:8px 12px;font-size:13px;background:#fff;color:#334;margin:0}
-.ch button.on{background:#1b4fd8;color:#fff}
+:root{--bg:#09070F;--s1:#14111D;--s2:#1C1828;--s3:#262036;--ln:rgba(255,255,255,.07);--tx:#F4F2FA;--mut:#9A94AD;--pri:#9B5CFF;--pri2:#C04BFF;--glow:rgba(155,92,255,.45);--gold:#F5C542;--ok:#34D399;--bad:#F87171}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{margin:0;min-height:100vh;background:radial-gradient(120% 60% at 50% -10%,rgba(155,92,255,.22),transparent 60%),var(--bg);background-attachment:fixed;color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,"Segoe UI",Roboto,sans-serif;padding-bottom:110px;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+header{position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;padding:16px 18px 12px;background:linear-gradient(180deg,rgba(9,7,15,.95) 60%,rgba(9,7,15,0));-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+header h1{margin:0;font-size:22px;font-weight:900;letter-spacing:5px;text-transform:uppercase;line-height:1;background:linear-gradient(90deg,#fff,#D9C2FF);-webkit-background-clip:text;background-clip:text;color:transparent}
+header h1::after{content:"Günlük futbol tahminleri";display:block;margin-top:6px;font-size:9.5px;font-weight:600;letter-spacing:2px;color:var(--mut);-webkit-text-fill-color:var(--mut)}
+.pt{background:rgba(155,92,255,.14);color:#E3D4FF;border:1px solid rgba(155,92,255,.4);border-radius:999px;padding:8px 14px;font-weight:700;font-size:14px;font-variant-numeric:tabular-nums}
+.pt:empty{display:none}
+#v{padding:6px 16px 8px;animation:gfi .28s ease both}
+.c{background:linear-gradient(180deg,var(--s2),var(--s1));border:1px solid var(--ln);border-radius:22px;padding:16px;margin-bottom:14px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.c .c{box-shadow:none;border-radius:16px;background:var(--s3)}
+.c b{font-weight:700}
+.mac{background:var(--s3);border:1px solid var(--ln);border-left:3px solid var(--pri);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.lg{font-size:12.5px;color:var(--mut);margin-bottom:4px}
+.tk{font-weight:700;font-size:16px;display:flex;justify-content:space-between;gap:8px;font-variant-numeric:tabular-nums}
+.pk{display:inline-block;margin-top:8px;font-size:12px;font-weight:700;background:rgba(155,92,255,.15);color:#D9C2FF;border:1px solid rgba(155,92,255,.3);border-radius:999px;padding:5px 11px}
+.y{background:rgba(52,211,153,.14)!important;color:var(--ok)!important;border-color:rgba(52,211,153,.35)!important}
+.k{background:rgba(248,113,113,.14)!important;color:var(--bad)!important;border-color:rgba(248,113,113,.35)!important}
+h3{margin:22px 4px 10px;font-size:17px;font-weight:800;color:var(--tx);letter-spacing:.2px}
+.c h3{font-size:21px;margin:0 0 14px}
+input,select,textarea,button{font:inherit;font-size:16px;padding:14px 16px;border:1px solid var(--ln);border-radius:14px;width:100%;margin:5px 0;background:var(--s1);color:var(--tx)}
+input,select,textarea{background:rgba(255,255,255,.04);transition:border-color .15s,box-shadow .15s}
+input::placeholder,textarea::placeholder{color:#6E6880}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--pri);box-shadow:0 0 0 3px rgba(155,92,255,.2)}
+select option{background:var(--s2);color:var(--tx)}
+button{background:linear-gradient(90deg,var(--pri),var(--pri2));color:#fff;border:0;font-weight:700;cursor:pointer;box-shadow:0 6px 22px var(--glow);transition:transform .1s,opacity .15s}
+button:active{transform:scale(.97)}
+button.g{background:rgba(255,255,255,.05);border:1px solid var(--ln);color:var(--tx);box-shadow:none}
+button.r{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);color:var(--bad);box-shadow:none}
+button:disabled{opacity:.4;box-shadow:none}
+nav{position:fixed;left:14px;right:14px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:30;display:flex;gap:2px;padding:7px;border-radius:26px;background:rgba(20,17,29,.88);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border:1px solid var(--ln);box-shadow:0 14px 40px rgba(0,0,0,.55)}
+nav a{flex:1;text-align:center;font-size:10px;font-weight:700;color:#7C7690;padding:7px 0 6px;border-radius:19px;cursor:pointer;transition:background .2s,color .2s,transform .1s}
+nav a:active{transform:scale(.92)}
+nav a i{display:block;font-style:normal;font-size:19px;margin-bottom:2px;filter:grayscale(1);opacity:.55;transition:all .2s}
+nav a.on{color:#E3D4FF;background:rgba(155,92,255,.16)}
+nav a.on i{filter:drop-shadow(0 0 8px var(--glow));opacity:1;animation:gpop .35s cubic-bezier(.3,1.6,.5,1)}
+.sg{display:flex;gap:4px;margin-bottom:14px;padding:4px;background:var(--s1);border:1px solid var(--ln);border-radius:16px}
+.sg button{margin:0;padding:10px 4px;font-size:13px;background:transparent;color:var(--mut);box-shadow:none;border-radius:12px}
+.sg button.on{background:var(--s3);color:#fff;box-shadow:inset 0 -2px 0 var(--pri)}
+.ch{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.ch button{width:auto;flex:none;padding:9px 15px;font-size:13px;background:var(--s1);border:1px solid var(--ln);color:var(--mut);margin:0;border-radius:999px;box-shadow:none}
+.ch button.on{background:rgba(155,92,255,.18);border-color:rgba(155,92,255,.5);color:#E3D4FF}
 .row{display:flex;gap:8px}.row>*{flex:1;min-width:0}
-.gr{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.lb{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #eef}
-.lb b:first-child{width:28px;color:#778}.lb span{flex:1;font-weight:600}
-.bl{position:relative;border-radius:12px;overflow:hidden;margin-top:8px}
-.bl .bx{filter:blur(7px);user-select:none;pointer-events:none;padding:10px;background:#e6eaf5}
-.bl .ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
-.bl .ov button{width:auto;margin:0;padding:10px 18px;background:#f5c542;color:#222}
-#ts{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;display:none;z-index:99}
-.bos{text-align:center;color:#778;padding:24px}
-.dt{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:10px;font-weight:600;font-size:14px}
-.dt button{width:36px;padding:6px;border-radius:50%}
+.gr{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.lb{display:flex;align-items:center;gap:10px;padding:13px 0;border-bottom:1px solid var(--ln)}
+.lb:last-child{border-bottom:0}
+.lb b:first-child{width:28px;color:var(--mut);font-variant-numeric:tabular-nums}.lb span{flex:1;font-weight:600}
+.bl{position:relative;border-radius:14px;overflow:hidden;margin-top:8px}
+.bl .bx{filter:blur(8px);user-select:none;pointer-events:none;padding:10px;background:var(--s3)}
+.bl .ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(9,7,15,.25)}
+.bl .ov button{width:auto;margin:0;padding:11px 20px;background:linear-gradient(90deg,#FFD866,var(--gold));color:#231A00;box-shadow:0 6px 20px rgba(245,197,66,.35)}
+#ts{position:fixed;top:calc(14px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);background:var(--s3);border:1px solid rgba(155,92,255,.4);color:#fff;padding:12px 18px;border-radius:14px;font-size:14px;font-weight:600;display:none;z-index:99;box-shadow:0 10px 30px rgba(0,0,0,.5);animation:gtoast .25s ease;max-width:calc(100% - 32px)}
+.bos{text-align:center;color:var(--mut);padding:36px 12px;font-size:14px}
+.dt{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:14px;font-weight:700;font-size:14px}
+.dt button{width:38px;height:38px;padding:0;border-radius:50%;background:var(--s2);border:1px solid var(--ln);box-shadow:none}
+#cd{font-variant-numeric:tabular-nums;letter-spacing:1px}
+a{color:#C9A8FF}
+/* giris ekrani */
+body.auth header{display:none}
+.hero{position:relative;text-align:center;padding:56px 8px 26px}
+.ring{position:relative;width:170px;height:170px;margin:0 auto 26px;border-radius:50%;border:3px solid #B57BFF;box-shadow:0 0 30px var(--glow),inset 0 0 30px var(--glow),0 0 90px rgba(155,92,255,.35);display:flex;align-items:center;justify-content:center;font-size:64px;animation:glw 3s ease-in-out infinite}
+.brand{font-size:40px;font-weight:900;letter-spacing:7px;line-height:1;background:linear-gradient(90deg,#fff,#D9C2FF);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tag{margin-top:10px;color:var(--mut);font-size:15px}
+.authc{background:rgba(20,17,29,.7);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.authc button{display:flex;justify-content:space-between;align-items:center;padding:16px 18px}
+.authc button.g{justify-content:center;background:none;border:0;color:var(--mut);font-weight:600}
+@keyframes glw{50%{box-shadow:0 0 40px var(--glow),inset 0 0 40px var(--glow),0 0 120px rgba(155,92,255,.5)}}
+@keyframes gfi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes gpop{0%{transform:scale(.7)}100%{transform:scale(1)}}
+@keyframes gtoast{from{opacity:0;transform:translate(-50%,-10px)}to{opacity:1;transform:translate(-50%,0)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style></head><body>
 <header><h1>Goleo</h1><span class="pt" id="pt"></span></header>
 <div id="v"></div>
@@ -52,7 +86,7 @@ nav a.on{color:#1b4fd8}
 <div id="ts"></div>
 <script>
 const sb=supabase.createClient("https://iaomtetwapkqaudmdzit.supabase.co","sb_publishable_NA6zmK6sku27Zt7bUqULMA_-Os-ojfo");
-const tg=window.Telegram&&Telegram.WebApp;if(tg){tg.ready();tg.expand()}
+const tg=window.Telegram&&Telegram.WebApp;if(tg){tg.ready();tg.expand();try{tg.setHeaderColor("#09070F");tg.setBackgroundColor("#09070F");if(tg.setBottomBarColor)tg.setBottomBarColor("#09070F")}catch(x){}}
 const BOT="goleoaibot";
 const $=id=>document.getElementById(id);
 const e=s=>String(s??"").replace(/[&<>"']/g,c=>"&#"+c.charCodeAt(0)+";");
@@ -64,13 +98,14 @@ const okUrl=u=>/^https?:\/\//i.test(u);
 const bos=t=>`<div class="bos">${t}</div>`;
 const DU=[["","⏳ Bekliyor"],["tuttu","✅ Tuttu"],["yatti","❌ Yattı"]];
 const rz=d=>d=="tuttu"?'<span class="pk y">✓ TUTTU</span>':d=="yatti"?'<span class="pk k">✗ YATTI</span>':"";
-const gc=g=>g>=60?"#1a8f3c":"#d9531e";
+const gc=g=>g>=60?"#34D399":"#FB923C";
 function toast(t){const x=$("ts");x.textContent=t;x.style.display="block";setTimeout(()=>x.style.display="none",2500)}
 const hata=m=>({"Invalid login credentials":"E-posta veya şifre hatalı","User already registered":"Bu e-posta zaten kayıtlı"}[m]||m);
 function openL(u){if(!u||!okUrl(u))return;if(tg&&/^https:\/\/t\.me\//i.test(u))tg.openTelegramLink(u);else if(tg)tg.openLink(u);else window.open(u,"_blank")}
 
 sb.auth.onAuthStateChange((_,s)=>{const id=s?s.user.id:null;if(id===cur)return;cur=id;me=s?s.user:null;setTimeout(start,0)});
 async function start(){
+  document.body.classList.toggle("auth",!me);
   if(!me){$("nav").style.display="none";$("pt").textContent="";return authV()}
   const {data}=await sb.from("profiles").select("*").eq("id",me.id).single();
   prof=data;$("pt").textContent="⭐ "+prof.points;
@@ -83,12 +118,13 @@ function go(t){clearInterval(cdT);tab=t;document.querySelectorAll("nav a").forEa
 
 /* GIRIS */
 function authV(){
-  $("v").innerHTML=`<div class="c"><h3 style="margin-top:0">${kayit?"Kayıt Ol":"Giriş Yap"}</h3>
+  $("v").innerHTML=`<div class="hero"><div class="ring">⚽</div><div class="brand">GOLEO</div><div class="tag">Günlük tahminler. Topluluk onaylı.</div></div>
+  <div class="c authc"><h3>${kayit?"Hesap oluştur":"Hoş geldin"}</h3>
   <input id="em" type="email" placeholder="E-posta" autocomplete="email">
   <input id="pw" type="password" placeholder="Şifre (en az 6 karakter)">
   ${kayit?`<input id="un" placeholder="Kullanıcı adı"><input id="rf" placeholder="Referans kodu (varsa)" value="${e(REF)}">`:""}
-  <button onclick="auth()">${kayit?"Kayıt Ol":"Giriş Yap"}</button>
-  <button class="g" onclick="kayit=!kayit;authV()">${kayit?"Hesabım var":"Hesap oluştur"}</button></div>`}
+  <button onclick="auth()"><span>${kayit?"Kayıt Ol":"Giriş Yap"}</span><span>→</span></button>
+  <button class="g" onclick="kayit=!kayit;authV()">${kayit?"Zaten hesabım var ›":"Hesabın yok mu? Kayıt ol ›"}</button></div>`}
 async function auth(){
   const email=$("em").value.trim(),pw=$("pw").value;let r;
   if(kayit){
@@ -121,7 +157,7 @@ async function vKup(){
   const d=key(kg);
   const [r,v]=await Promise.all([sb.from("coupons").select("*").eq("gun",d).order("id"),sb.rpc("vip_list",{d1:d,d2:d})]);
   const l=r.data||[];
-  const h=TUR.map(([k,ad])=>l.filter(c=>c.tur==k).map(c=>`<div class="c"><b>${ad}</b>`+(c.items||[]).map(m=>`<div class="mac" style="background:#f1f4fa;margin:8px 0 0"><div class="lg">${e(m.lig)} · ${e(m.saat)}</div><div class="tk"><span>${e(m.ev)} – ${e(m.dep)}</span><span style="color:${gc(m.guven)}">%${e(m.guven)}</span></div><div style="margin-top:6px;font-weight:700">${e(m.tahmin)} ${rz(m.durum)}</div></div>`).join("")+"</div>").join("")).join("");
+  const h=TUR.map(([k,ad])=>l.filter(c=>c.tur==k).map(c=>`<div class="c"><b>${ad}</b>`+(c.items||[]).map(m=>`<div class="mac" style="background:var(--s3);margin:8px 0 0"><div class="lg">${e(m.lig)} · ${e(m.saat)}</div><div class="tk"><span>${e(m.ev)} – ${e(m.dep)}</span><span style="color:${gc(m.guven)}">%${e(m.guven)}</span></div><div style="margin-top:6px;font-weight:700">${e(m.tahmin)} ${rz(m.durum)}</div></div>`).join("")+"</div>").join("")).join("");
   const vt=(v.data||[]).map(vc).join("");
   const vh=vt?`<h3>👑 VIP</h3>${vt}<div class="lg" style="margin:0 4px 12px">Tahminler kazanç garantisi vermez.</div>`:"";
   if(tab=="kup")$("v").innerHTML=`<div class="dt"><button onclick="kg.setDate(kg.getDate()-1);vKup()">‹</button><span>${kg.toLocaleDateString("tr-TR",{day:"numeric",month:"long",weekday:"long"})}</span><button onclick="kg.setDate(kg.getDate()+1);vKup()">›</button></div>`+((h||vh)?h+vh:bos("Bu gün için kupon yok."))}
@@ -138,7 +174,7 @@ async function vTop(){
   const {data}=await sb.from("tips").select("*,profiles(username)").order("created_at",{ascending:false}).limit(40);
   const row='<div class="row pr"><input placeholder="Maç (A - B)"><input placeholder="Tahmin"></div>';
   const f=`<div class="c"><b>Tahminini paylaş</b>${row+row+row}<textarea id="nt" rows="2" placeholder="Not (isteğe bağlı)"></textarea><button onclick="paylas()">Paylaş</button></div>`;
-  const l=(data||[]).map(t=>`<div class="c"><div class="lg">@${e(t.profiles&&t.profiles.username)} · ${fz(t.created_at)} ${rz(t.status=="won"?"tuttu":t.status=="lost"?"yatti":"")}</div>`+(t.items||[]).map(i=>`<div style="font-weight:700;margin-top:4px">${e(i.mac)} → ${e(i.tahmin)}</div>`).join("")+(t.note?`<div style="margin-top:6px;color:#556">${e(t.note)}</div>`:"")+"</div>").join("");
+  const l=(data||[]).map(t=>`<div class="c"><div class="lg">@${e(t.profiles&&t.profiles.username)} · ${fz(t.created_at)} ${rz(t.status=="won"?"tuttu":t.status=="lost"?"yatti":"")}</div>`+(t.items||[]).map(i=>`<div style="font-weight:700;margin-top:4px">${e(i.mac)} → ${e(i.tahmin)}</div>`).join("")+(t.note?`<div style="margin-top:6px;color:var(--mut)">${e(t.note)}</div>`:"")+"</div>").join("");
   if(tab=="top"&&ts2=="tips")$("v").innerHTML=seg+f+(l||bos("Henüz paylaşım yok."))}
 async function paylas(){
   const items=[...document.querySelectorAll(".pr")].map(r=>({mac:r.children[0].value.trim(),tahmin:r.children[1].value.trim()})).filter(x=>x.mac&&x.tahmin);
@@ -147,7 +183,7 @@ async function paylas(){
   toast(error?"Paylaşılamadı":"Paylaşıldı ✓");vTop()}
 function cm(m){
   const mine=m.user_id==me.id;
-  return `<div id="m${m.id}" style="display:flex;justify-content:${mine?"flex-end":"flex-start"};margin:6px 0"><div style="max-width:80%;background:${mine?"#1b4fd8":"#f1f4fa"};color:${mine?"#fff":"#111"};border-radius:14px;padding:8px 12px">
+  return `<div id="m${m.id}" style="display:flex;justify-content:${mine?"flex-end":"flex-start"};margin:6px 0"><div style="max-width:80%;background:${mine?"linear-gradient(90deg,#9B5CFF,#C04BFF)":"var(--s3)"};color:#fff;border-radius:14px;padding:8px 12px">
   <div style="font-size:11px;opacity:.7;font-weight:700">${mine?"Sen":"@"+e(m.profiles&&m.profiles.username)} · ${new Date(m.created_at).toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})}${(prof.is_admin||mine)?` <a onclick="cDel(${m.id})" style="cursor:pointer"> ✕</a>`:""}</div>
   <div style="word-break:break-word">${e(m.body)}</div></div></div>`}
 function cAdd(m){
@@ -207,26 +243,26 @@ async function vPro(){
     const have=mine.count||0,S=stt.data||{},bitti=new Date(R.ends_at)<=new Date();
     const allowed=R.spend?Math.floor(pts/R.cost):Math.floor(pts/R.cost)-have;
     const kapali=bitti||allowed<1;
-    rh=`<div class="c" style="border:2px solid #1b4fd8"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>🎁 ${e(R.title)}</b><span class="pk">${R.winners} kazanan${R.backups?" + "+R.backups+" yedek":""}</span></div>
-    <div style="font-size:13px;color:#556;margin:6px 0;white-space:pre-line">${e(R.descr||"")}</div>
+    rh=`<div class="c" style="border:1.5px solid #9B5CFF;box-shadow:0 0 0 1px rgba(155,92,255,.2),0 10px 30px rgba(155,92,255,.18)"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>🎁 ${e(R.title)}</b><span class="pk">${R.winners} kazanan${R.backups?" + "+R.backups+" yedek":""}</span></div>
+    <div style="font-size:13px;color:var(--mut);margin:6px 0;white-space:pre-line">${e(R.descr||"")}</div>
     <div id="cd" style="text-align:center;font-size:26px;font-weight:800"></div><div class="lg" style="text-align:center">Bitmesine kalan süre</div>
     <div class="lg" style="margin-top:8px">Her katılım için ${R.cost} puan ${R.spend?"harcanır":"gerekir (puanın düşmez)"} · Toplam ${S.entries||0} katılım</div>
     <div class="lg">Puanın: ⭐ ${pts} · Katılımların: ${have}</div>
     <div class="lg">Telegram kullanıcı adın</div>
     <div class="row"><input id="tgu" placeholder="@kullaniciadi" value="${pf.data.tg_username?"@"+e(pf.data.tg_username):""}"><button class="g" style="flex:none;width:auto" onclick="tgKaydet()">Kaydet</button></div>
     <div class="row"><input id="cn" type="number" min="1" value="1" ${kapali?"disabled":""}><button onclick="cKatil(${R.id})" ${kapali?"disabled":""}>Katıl</button></div>
-    <div class="lg" style="${kapali?"color:#d33":""}">${bitti?"Süre doldu, sonuç bekleniyor.":allowed<1?(pts<R.cost?"Puanın yetmiyor.":"Daha fazla katılamazsın."):"En fazla "+allowed+" kez katılabilirsin."}</div></div>`;
+    <div class="lg" style="${kapali?"color:#F87171":""}">${bitti?"Süre doldu, sonuç bekleniyor.":allowed<1?(pts<R.cost?"Puanın yetmiyor.":"Daha fazla katılamazsın."):"En fazla "+allowed+" kez katılabilirsin."}</div></div>`;
   }else if(R){
     const {data:w}=await sb.rpc("get_raffle_winners",{rid:R.id});
     const ben=(w||[]).find(x=>x.username==prof.username);
-    rh=`<div class="c" style="border:2px solid #1a8f3c"><b>🎉 ${e(R.title)} sonuçları</b>
+    rh=`<div class="c" style="border:1.5px solid #34D399"><b>🎉 ${e(R.title)} sonuçları</b>
     ${ben?`<div class="pk y" style="display:block;margin:8px 0;text-align:center">Tebrikler, ${ben.kind=="asil"?"kazandın":"yedek listesindesin"}! Seninle Telegram'dan iletişime geçilecek.</div>`:""}
     ${(w||[]).map(x=>`<div class="lb"><span>${x.kind=="asil"?"🏆":"🔁"} ${x.sira}. @${e(x.username)}</span><b>${x.kind=="asil"?"Asıl":"Yedek"}</b></div>`).join("")||bos("Katılım olmadı.")}</div>`;
   }
   const vl=(vs.data||[]).filter(x=>!x.owned&&!x.durum);
   const vh=`<div class="c" id="vipshop"><b>👑 VIP Tahminler</b><div class="lg" style="margin-top:4px">Satın aldığın tahminler Kupon › VIP bölümünde açılır. İstediğin kadar tahmin alabilirsin. Tahminler kazanç garantisi vermez.</div>`
    +(vl.map(x=>`<div class="lb"><span>${e(x.ev)} – ${e(x.dep)}<div class="lg" style="margin:0">${new Date(x.gun+"T12:00").toLocaleDateString("tr-TR",{day:"numeric",month:"short"})} · ${e(x.saat)}</div></span><button style="width:auto;margin:0;padding:8px 14px" onclick="vipAl(${x.id},${x.price})">${x.price} puan</button></div>`).join("")||bos("Şu an satın alınabilir VIP tahmin yok."))+"</div>";
-  const pkh=(pk.data||[]).map(x=>`<div class="c" style="margin:0;text-align:center;background:#f1f4fa"><b style="font-size:22px">${x.points}</b><div class="lg">puan</div><div style="font-weight:700;margin:6px 0">${e(x.price_label)}</div><button onclick="pkAl(${x.id})">Satın Al</button></div>`).join("");
+  const pkh=(pk.data||[]).map(x=>`<div class="c" style="margin:0;text-align:center;background:var(--s3)"><b style="font-size:22px">${x.points}</b><div class="lg">puan</div><div style="font-weight:700;margin:6px 0">${e(x.price_label)}</div><button onclick="pkAl(${x.id})">Satın Al</button></div>`).join("");
   const lg=(l.data||[]).map(x=>`<div class="lb"><span>${e(x.reason)}</span><b>${x.points>0?"+":""}${x.points}</b></div>`).join("")||bos("Henüz puan yok.");
   if(tab!="pro")return;
   $("v").innerHTML=`<div class="c"><h2 style="margin:0">@${e(prof.username)}</h2><div class="lg">${e(me.email)}</div>
@@ -271,7 +307,7 @@ async function vAdm(){
   $("v").innerHTML=`<div class="ch">${T.map(([k,n])=>`<button class="${k==aT?"on":""}" onclick="aT='${k}';vAdm()">${n}</button>`).join("")}</div><div id="ab">${bos("Yükleniyor...")}</div>`;
   await({ozet:aOzet,kupon:aKupon,vip:aVip,sponsor:aSp,cekilis:aCek,uye:aUye,ayar:aAyar}[aT])();
 }
-const itEd=(m={})=>`<div class="ci" style="margin-top:8px;padding-top:8px;border-top:1px solid #dde">
+const itEd=(m={})=>`<div class="ci" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--ln)">
 <input class="f-lig" placeholder="Lig" value="${e(m.lig)}">
 <div class="row"><input class="f-ev" placeholder="Ev sahibi" value="${e(m.ev)}"><input class="f-dep" placeholder="Deplasman" value="${e(m.dep)}"></div>
 <div class="row"><input class="f-saat" type="time" value="${e(m.saat)}"><input class="f-guven" type="number" min="1" max="100" placeholder="Güven %" value="${m.guven??""}"></div>
@@ -338,7 +374,7 @@ async function vSil(id){if(confirm("VIP tahmin silinsin mi? Satın alanların ka
 
 async function aSp(){
   const {data}=await sb.from("sponsors").select("*").order("sort").order("id");
-  const l=(data||[]).map(x=>`<div class="c cc" data-id="${x.id}" style="background:#f1f4fa"><select class="s-kind"><option value="kanal" ${x.kind=="kanal"?"selected":""}>📢 Telegram kanalı</option><option value="site" ${x.kind=="site"?"selected":""}>🌐 Web sitesi</option></select>
+  const l=(data||[]).map(x=>`<div class="c cc" data-id="${x.id}" style="background:var(--s3)"><select class="s-kind"><option value="kanal" ${x.kind=="kanal"?"selected":""}>📢 Telegram kanalı</option><option value="site" ${x.kind=="site"?"selected":""}>🌐 Web sitesi</option></select>
   <input class="s-title" placeholder="Ad" value="${e(x.title)}"><input class="s-url" placeholder="Link" value="${e(x.url)}"><input class="s-descr" placeholder="Açıklama" value="${e(x.descr)}">
   <div class="row"><input class="s-sort" type="number" placeholder="Sıra" value="${x.sort}"><select class="s-act">${onOff(x.active)}</select></div>
   <div class="row"><button onclick="spKaydet(${x.id})">Kaydet</button><button class="r" onclick="spSil(${x.id})">Sil</button></div></div>`).join("");
@@ -406,7 +442,7 @@ async function uAra(){
   const q=$("uq")?$("uq").value.trim():"";
   const {data}=await sb.rpc("admin_users",{q});
   const x=$("au");if(!x)return;
-  x.innerHTML=(data||[]).map(u=>`<div class="c" style="margin:8px 0;background:#f1f4fa"><b>@${e(u.username)}</b> · ⭐ ${u.points}<div class="lg">${e(u.email)}</div>
+  x.innerHTML=(data||[]).map(u=>`<div class="c" style="margin:8px 0;background:var(--s3)"><b>@${e(u.username)}</b> · ⭐ ${u.points}<div class="lg">${e(u.email)}</div>
   <input id="p${u.id}" type="number" placeholder="+50 ya da -20">
   <select id="t${u.id}"><option value="admin düzeltme">Düzeltme (sıralamaya yansır)</option><option value="puan satın alma">Paket satışı (sıralamaya yansımaz)</option></select>
   <button onclick="pEkle('${u.id}')">Puanı uygula</button></div>`).join("")||bos("Üye bulunamadı.")}
@@ -418,7 +454,7 @@ async function pEkle(id){
 async function aAyar(){
   const [st,cf,pk]=await Promise.all([sb.from("settings").select("*"),sb.from("config").select("*"),sb.from("point_packs").select("*").order("sort").order("id")]);
   const ST=Object.fromEntries((st.data||[]).map(x=>[x.key,x.value])),C=Object.fromEntries((cf.data||[]).map(x=>[x.key,x.value]));
-  const pl=(pk.data||[]).map(x=>`<div class="c cc" data-id="${x.id}" style="background:#f1f4fa"><div class="row"><div><div class="lg">Puan</div><input class="p-pts" type="number" value="${x.points}"></div><div><div class="lg">Fiyat yazısı</div><input class="p-lbl" value="${e(x.price_label)}"></div></div>
+  const pl=(pk.data||[]).map(x=>`<div class="c cc" data-id="${x.id}" style="background:var(--s3)"><div class="row"><div><div class="lg">Puan</div><input class="p-pts" type="number" value="${x.points}"></div><div><div class="lg">Fiyat yazısı</div><input class="p-lbl" value="${e(x.price_label)}"></div></div>
   <div class="row"><input class="p-sort" type="number" placeholder="Sıra" value="${x.sort}"><select class="p-act">${onOff(x.active)}</select></div><button onclick="pkKaydet(${x.id})">Kaydet</button></div>`).join("");
   ab(`<div class="c"><b>Puan ayarları</b><div class="lg">Davet başına referans puanı</div><input id="sr" type="number" value="${ST.ref_points??50}">
   <div class="lg">Tutan paylaşım puanı</div><input id="st" type="number" value="${ST.tip_points??20}"><button onclick="sKaydet()">Kaydet</button></div>
@@ -451,7 +487,7 @@ vPro=async function(){
   if(tab!="pro")return;
   const [pl,end]=await Promise.all([sb.from("vip_plans").select("*").eq("active",true).order("sort").order("id"),vipSub()]);
   if(tab!="pro")return;
-  const h=`<div class="c" id="vsub" style="border:2px solid #f5c542"><b>👑 VIP Üyelik</b>
+  const h=`<div class="c" id="vsub" style="border:1.5px solid #F5C542;background:linear-gradient(180deg,rgba(245,197,66,.1),var(--s1))"><b>👑 VIP Üyelik</b>
   <div class="lg" style="margin-top:4px">Üyelik süresince tüm VIP tahminleri görürsün. Süre dolunca tek tek satın aldıkların açık kalır. Tahminler kazanç garantisi vermez.</div>
   ${end?`<div class="pk y" style="display:block;margin:8px 0;text-align:center">✓ Aktif · Bitiş: ${trD(end)}</div>`:""}
   ${(pl.data||[]).map(x=>`<div class="lb"><span>${e(x.title)}<div class="lg" style="margin:0">${x.days} gün</div></span><button style="width:auto;margin:0;padding:8px 14px" onclick="planAl(${x.id},${x.price},${x.days})">${x.price} puan${end?" · Uzat":""}</button></div>`).join("")||bos("Şu an üyelik paketi yok.")}</div>`;
@@ -484,7 +520,7 @@ aVip=async function(){
     sb.from("vip_subs").select("user_id",{count:"exact",head:true}).gt("ends_at",new Date().toISOString())]);
   const x=$("ab");if(!x||tab!="adm")return;
   x.insertAdjacentHTML("afterbegin",`<div class="c"><b>👑 Süreli VIP paketleri</b><div class="lg">Şu an aktif üyelik sayısı: ${sc.count||0}</div>
-  ${(pl.data||[]).map(p=>`<div class="c pc" data-id="${p.id}" style="background:#f1f4fa"><input class="q-title" placeholder="Paket adı" value="${e(p.title)}">
+  ${(pl.data||[]).map(p=>`<div class="c pc" data-id="${p.id}" style="background:var(--s3)"><input class="q-title" placeholder="Paket adı" value="${e(p.title)}">
   <div class="row"><div><div class="lg">Süre (gün)</div><input class="q-days" type="number" value="${p.days}"></div><div><div class="lg">Fiyat (puan)</div><input class="q-price" type="number" value="${p.price}"></div></div>
   <div class="row"><input class="q-sort" type="number" placeholder="Sıra" value="${p.sort}"><select class="q-act">${onOff(p.active)}</select></div>
   <div class="row"><button onclick="plKaydet(${p.id})">Kaydet</button><button class="r" onclick="plSil(${p.id})">Sil</button></div></div>`).join("")}
@@ -566,7 +602,7 @@ async function dGonder(){
   if(tab=="adm"&&aT=="duyuru")vAdm()}
 async function dAra(){
   const {data}=await sb.rpc("admin_users",{q:$("dq").value.trim()});
-  $("dres").innerHTML=(data||[]).map(u=>`<div class="c" style="margin:8px 0;background:#f1f4fa"><b>@${e(u.username)}</b><div class="lg">${e(u.email)}</div>
+  $("dres").innerHTML=(data||[]).map(u=>`<div class="c" style="margin:8px 0;background:var(--s3)"><b>@${e(u.username)}</b><div class="lg">${e(u.email)}</div>
   <textarea id="dm${u.id}" rows="2" maxlength="1000" placeholder="Mesaj"></textarea><button onclick="dKisi('${u.id}')">Gönder</button></div>`).join("")||bos("Üye bulunamadı.")}
 async function dKisi(id){
   const msg=$("dm"+id).value.trim();if(!msg)return toast("Mesaj yaz");
