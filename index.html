@@ -73,7 +73,6 @@ body.auth header{display:none}
 .tag{margin-top:10px;color:var(--mut);font-size:15px}
 .authc{background:rgba(20,17,29,.7);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
 .authc button{display:flex;justify-content:space-between;align-items:center;padding:16px 18px}
-.lnk{display:inline-block;margin:4px 2px 6px;color:#C9A8FF;font-size:13.5px;font-weight:600;cursor:pointer}
 .authc button.g{justify-content:center;background:none;border:0;color:var(--mut);font-weight:600}
 @keyframes glw{50%{box-shadow:0 0 40px var(--glow),inset 0 0 40px var(--glow),0 0 120px rgba(155,92,255,.5)}}
 @keyframes gfi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
@@ -101,7 +100,7 @@ const DU=[["","⏳ Bekliyor"],["tuttu","✅ Tuttu"],["yatti","❌ Yattı"]];
 const rz=d=>d=="tuttu"?'<span class="pk y">✓ TUTTU</span>':d=="yatti"?'<span class="pk k">✗ YATTI</span>':"";
 const gc=g=>g>=60?"#34D399":"#FB923C";
 function toast(t){const x=$("ts");x.textContent=t;x.style.display="block";setTimeout(()=>x.style.display="none",2500)}
-const hata=m=>({"Invalid login credentials":"E-posta veya şifre hatalı","User already registered":"Bu e-posta zaten kayıtlı","New password should be different from the old password.":"Yeni şifre eskisiyle aynı olamaz"}[m]||m);
+const hata=m=>({"Invalid login credentials":"E-posta veya şifre hatalı","User already registered":"Bu e-posta zaten kayıtlı"}[m]||m);
 function openL(u){if(!u||!okUrl(u))return;if(tg&&/^https:\/\/t\.me\//i.test(u))tg.openTelegramLink(u);else if(tg)tg.openLink(u);else window.open(u,"_blank")}
 
 sb.auth.onAuthStateChange((_,s)=>{const id=s?s.user.id:null;if(id===cur)return;cur=id;me=s?s.user:null;setTimeout(start,0)});
@@ -118,50 +117,14 @@ async function start(){
 function go(t){clearInterval(cdT);tab=t;document.querySelectorAll("nav a").forEach(a=>a.className=a.id=="n-"+t?"on":"");({sp:vSp,kup:vKup,top:vTop,sir:vSir,pro:vPro,adm:vAdm})[t]()}
 
 /* GIRIS */
-let unut=0,unEm="",unBusy=false;
-const HERO=`<div class="hero"><div class="ring">⚽</div><div class="brand">GOLEO</div><div class="tag">Günlük tahminler. Topluluk onaylı.</div></div>`;
 function authV(){
-  if(unut)return unutV();
-  $("v").innerHTML=HERO+`<div class="c authc"><h3>${kayit?"Hesap oluştur":"Hoş geldin"}</h3>
-  <input id="em" type="email" placeholder="E-posta" autocomplete="email" value="${e(unEm)}">
-  <input id="pw" type="password" placeholder="Şifre (en az 6 karakter)" autocomplete="${kayit?"new-password":"current-password"}">
-  ${kayit?`<input id="un" placeholder="Kullanıcı adı"><input id="rf" placeholder="Referans kodu (varsa)" value="${e(REF)}">`:`<div style="text-align:right"><a class="lnk" onclick="unEm=$('em').value.trim();unut=1;authV()">Şifremi unuttum</a></div>`}
+  $("v").innerHTML=`<div class="hero"><div class="ring">⚽</div><div class="brand">GOLEO</div><div class="tag">Günlük tahminler. Topluluk onaylı.</div></div>
+  <div class="c authc"><h3>${kayit?"Hesap oluştur":"Hoş geldin"}</h3>
+  <input id="em" type="email" placeholder="E-posta" autocomplete="email">
+  <input id="pw" type="password" placeholder="Şifre (en az 6 karakter)">
+  ${kayit?`<input id="un" placeholder="Kullanıcı adı"><input id="rf" placeholder="Referans kodu (varsa)" value="${e(REF)}">`:""}
   <button onclick="auth()"><span>${kayit?"Kayıt Ol":"Giriş Yap"}</span><span>→</span></button>
   <button class="g" onclick="kayit=!kayit;authV()">${kayit?"Zaten hesabım var ›":"Hesabın yok mu? Kayıt ol ›"}</button></div>`}
-function unutV(){
-  $("v").innerHTML=HERO+`<div class="c authc"><h3>Şifreni sıfırla</h3>`+(unut==1
-  ?`<div class="lg" style="margin-bottom:8px">Kayıtlı e-posta adresini yaz, sana bir onay kodu gönderelim.</div>
-  <input id="em" type="email" placeholder="E-posta" autocomplete="email" value="${e(unEm)}">
-  <button onclick="kodGonder()"><span>Kod gönder</span><span>→</span></button>`
-  :`<div class="lg" style="margin-bottom:8px"><b style="color:var(--tx)">${e(unEm)}</b> adresine gelen onay kodunu ve yeni şifreni yaz. Gelmediyse spam klasörüne bak.</div>
-  <input id="kod" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="Onay kodu" style="letter-spacing:6px;text-align:center;font-size:20px;font-weight:700">
-  <input id="pw1" type="password" placeholder="Yeni şifre (en az 6 karakter)" autocomplete="new-password">
-  <input id="pw2" type="password" placeholder="Yeni şifre (tekrar)" autocomplete="new-password">
-  <button onclick="sifreDegis()"><span>Şifreyi değiştir</span><span>→</span></button>
-  <div style="text-align:center"><a class="lnk" onclick="kodGonder(true)">Kodu tekrar gönder</a></div>`)
-  +`<button class="g" onclick="unut=0;authV()">‹ Girişe dön</button></div>`}
-async function kodGonder(tekrar){
-  if(unBusy)return;
-  if(!tekrar)unEm=$("em").value.trim();
-  if(!/^\S+@\S+\.\S+$/.test(unEm))return toast("Geçerli bir e-posta yaz");
-  unBusy=true;
-  const {error}=await sb.auth.resetPasswordForEmail(unEm);
-  unBusy=false;
-  if(error)return toast(/rate|seconds|security/i.test(error.message)?"Çok sık denedin, biraz bekleyip tekrar dene":hata(error.message));
-  toast("Onay kodu gönderildi ✉️");
-  if(unut!=2){unut=2;unutV()}}
-async function sifreDegis(){
-  if(unBusy)return;
-  const kod=$("kod").value.replace(/\D/g,""),p1=$("pw1").value,p2=$("pw2").value;
-  if(kod.length<6)return toast("Onay kodunu yaz");
-  if(p1.length<6)return toast("Şifre en az 6 karakter olmalı");
-  if(p1!==p2)return toast("Şifreler aynı değil");
-  unBusy=true;
-  const v=await sb.auth.verifyOtp({email:unEm,token:kod,type:"recovery"});
-  if(v.error){unBusy=false;return toast("Kod hatalı ya da süresi dolmuş")}
-  const u=await sb.auth.updateUser({password:p1});
-  unBusy=false;unut=0;
-  toast(u.error?"Şifre değiştirilemedi: "+hata(u.error.message):"Şifren değiştirildi ✓")}
 async function auth(){
   const email=$("em").value.trim(),pw=$("pw").value;let r;
   if(kayit){
