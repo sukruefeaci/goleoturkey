@@ -137,13 +137,44 @@ async function auth(){
 }
 
 /* SPONSORLAR */
+let SPD=new Set(),SPC=new Set(),spBusy={};
+const spRw=x=>x.kind=="kanal"&&x.reward>0;
+const spPend=()=>{try{return JSON.parse(localStorage.getItem("spPend")||"[]")}catch(x){return[]}};
+const spSetPend=a=>{try{localStorage.setItem("spPend",JSON.stringify(a))}catch(x){}};
 async function vSp(){
-  const {data}=await sb.from("sponsors").select("*").eq("active",true).order("sort").order("id");
+  const [r,st]=await Promise.all([sb.from("sponsors").select("*").eq("active",true).order("sort").order("id"),sb.rpc("sponsor_status")]);
+  const data=r.data;SPD=new Set(st.data||[]);
   SPM=Object.fromEntries((data||[]).map(x=>[x.id,x]));
-  const l=(data||[]).map(x=>`<div class="c"><div style="display:flex;gap:10px;align-items:center"><div style="font-size:28px">${x.kind=="kanal"?"📢":"🌐"}</div><div style="flex:1;min-width:0"><b>${e(x.title)}</b>${x.descr?`<div class="lg" style="margin:2px 0 0">${e(x.descr)}</div>`:""}</div></div>
-  <button style="margin-top:10px" onclick="spGit(${x.id})">${x.kind=="kanal"?"Kanala katıl":"Siteye git"}</button></div>`).join("");
-  if(tab=="sp")$("v").innerHTML=l||bos("Şu an sponsor yok.")}
-function spGit(id){const x=SPM[id];if(x)openL(x.url)}
+  const l=(data||[]).map(x=>{const rw=spRw(x),ok=SPD.has(x.id);
+  return `<div class="c"><div style="display:flex;gap:10px;align-items:center"><div style="font-size:28px">${x.kind=="kanal"?"📢":"🌐"}</div><div style="flex:1;min-width:0"><b>${e(x.title)}</b>${x.descr?`<div class="lg" style="margin:2px 0 0">${e(x.descr)}</div>`:""}</div>${rw?`<span class="pk ${ok?"y":""}" style="margin:0;flex:none">${ok?"✓ ":"+"}${x.reward} puan</span>`:""}</div>
+  ${ok||!rw?`<button style="margin-top:10px" ${ok?'class="g"':""} onclick="spGit(${x.id})">${x.kind=="kanal"?(ok?"Kanala git":"Kanala katıl"):"Siteye git"}</button>`
+  :`<div class="row" style="margin-top:6px"><button style="flex:3" onclick="spGit(${x.id})">Katıl · +${x.reward} puan</button><button class="g" id="spk${x.id}" style="flex:2" onclick="spAl(${x.id})">Puanımı al</button></div>`}</div>`}).join("");
+  if(tab!="sp")return;
+  $("v").innerHTML=l||bos("Şu an sponsor yok.");
+  const P=spPend();
+  (data||[]).filter(x=>spRw(x)&&!SPD.has(x.id)&&(P.includes(x.id)||!SPC.has(x.id))).forEach(x=>spAl(x.id,true));
+}
+function spGit(id){const x=SPM[id];if(!x)return;
+  if(spRw(x)&&!SPD.has(id)){const P=spPend();if(!P.includes(id))spSetPend(P.concat(id));SPC.delete(id)}
+  openL(x.url)}
+async function spAl(id,quiet){
+  if(spBusy[id])return;spBusy[id]=1;SPC.add(id);
+  const b=$("spk"+id);if(b&&!quiet){b.disabled=true;b.textContent="Kontrol…"}
+  const {data,error}=await sb.rpc("sponsor_claim",{sid:id});
+  spBusy[id]=0;
+  if(data&&(data.ok||data.done))spSetPend(spPend().filter(x=>x!=id));
+  if(data&&data.ok){
+    toast(data.msg);
+    const {data:p}=await sb.from("profiles").select("points").eq("id",me.id).single();
+    if(p){prof.points=p.points;$("pt").textContent="⭐ "+p.points}
+    if(tab=="sp")vSp();return}
+  if(!quiet)toast(error?"Kontrol edilemedi":data.msg);
+  if(data&&data.done&&tab=="sp")return vSp();
+  const b2=$("spk"+id);if(b2){b2.disabled=false;b2.textContent="Puanımı al"}
+}
+function spDon(){if(document.visibilityState=="visible"&&me&&tab=="sp"&&spPend().length)spPend().forEach(id=>{if(SPM[id])spAl(id,true)})}
+document.addEventListener("visibilitychange",spDon);
+if(tg&&tg.onEvent)tg.onEvent("activated",spDon);
 
 /* KUPON + VIP */
 const TUR=[["tekli","TEKLİ KUPON"],["ikili","2'Lİ KUPON"],["uclu","3'LÜ KUPON"]];
@@ -376,19 +407,22 @@ async function aSp(){
   const {data}=await sb.from("sponsors").select("*").order("sort").order("id");
   const l=(data||[]).map(x=>`<div class="c cc" data-id="${x.id}" style="background:var(--s3)"><select class="s-kind"><option value="kanal" ${x.kind=="kanal"?"selected":""}>📢 Telegram kanalı</option><option value="site" ${x.kind=="site"?"selected":""}>🌐 Web sitesi</option></select>
   <input class="s-title" placeholder="Ad" value="${e(x.title)}"><input class="s-url" placeholder="Link" value="${e(x.url)}"><input class="s-descr" placeholder="Açıklama" value="${e(x.descr)}">
+  <div class="row"><div><div class="lg">Katılım puanı</div><input class="s-rw" type="number" min="0" value="${x.reward||0}"></div><div><div class="lg">Kanal @ad</div><input class="s-chat" placeholder="Linkten alınır" value="${e(x.chat)}"></div></div>
   <div class="row"><input class="s-sort" type="number" placeholder="Sıra" value="${x.sort}"><select class="s-act">${onOff(x.active)}</select></div>
   <div class="row"><button onclick="spKaydet(${x.id})">Kaydet</button><button class="r" onclick="spSil(${x.id})">Sil</button></div></div>`).join("");
   ab(`<div class="c"><b>Yeni sponsor</b><select id="sk1"><option value="kanal">📢 Telegram kanalı</option><option value="site">🌐 Web sitesi</option></select>
-  <input id="sn1" placeholder="Ad"><input id="sl1" placeholder="Link (https://...)"><input id="sd1" placeholder="Kısa açıklama (isteğe bağlı)"><input id="so1" type="number" placeholder="Sıra (küçük olan önce)">
+  <input id="sn1" placeholder="Ad"><input id="sl1" placeholder="Link (https://...)"><input id="sd1" placeholder="Kısa açıklama (isteğe bağlı)">
+  <div class="row"><input id="sr1" type="number" min="0" placeholder="Puan (örn. 50)"><input id="sc1" placeholder="Kanal @ad"></div>
+  <div class="lg">Puanlı kanal için bot (@${BOT}) kanalda yönetici olmalı. Herkese açık kanalda "Kanal" boş kalabilir; gizli kanalda -100… ile başlayan kanal ID’sini yaz.</div><input id="so1" type="number" placeholder="Sıra (küçük olan önce)">
   <button onclick="spEkle()">Sponsor ekle</button></div><h3>Sponsorlar</h3>${l||bos("Sponsor yok.")}`)}
 async function spEkle(){
-  const row={kind:$("sk1").value,title:$("sn1").value.trim(),url:$("sl1").value.trim(),descr:$("sd1").value.trim()||null,sort:+$("so1").value||0};
+  const row={kind:$("sk1").value,title:$("sn1").value.trim(),url:$("sl1").value.trim(),descr:$("sd1").value.trim()||null,reward:Math.max(0,+$("sr1").value||0),chat:$("sc1").value.trim()||null,sort:+$("so1").value||0};
   if(!row.title||!okUrl(row.url))return toast("Ad ve https:// ile başlayan link gerekli");
   const {error}=await sb.from("sponsors").insert(row);
   toast(error?error.message:"Sponsor eklendi");vAdm()}
 async function spKaydet(id){
   const c=cc(id),g=s=>c.querySelector(s).value.trim();
-  const row={kind:g(".s-kind"),title:g(".s-title"),url:g(".s-url"),descr:g(".s-descr")||null,sort:+g(".s-sort")||0,active:g(".s-act")=="1"};
+  const row={kind:g(".s-kind"),title:g(".s-title"),url:g(".s-url"),descr:g(".s-descr")||null,reward:Math.max(0,+g(".s-rw")||0),chat:g(".s-chat")||null,sort:+g(".s-sort")||0,active:g(".s-act")=="1"};
   if(!row.title||!okUrl(row.url))return toast("Ad ve https:// ile başlayan link gerekli");
   const {error}=await sb.from("sponsors").update(row).eq("id",id);
   toast(error?error.message:"Kaydedildi ✓")}
