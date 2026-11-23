@@ -216,6 +216,44 @@ returns boolean language sql immutable as $$
               or coalesce(y->>'dep', '') ~ '(U\d{2}\M|\(K\))')
 $$;
 
+-- API'siz analiz: arşivdeki form verisinden otomatik yazı
+create or replace function public.analiz_sablon(t text, ev text, dep text, fe jsonb, fd jsonb, o numeric, g int)
+returns text language plpgsql immutable as $$
+declare s text := '';
+  ne int := case when coalesce((fe->>'n')::int, 0) >= 3 then (fe->>'n')::int else 0 end;
+  nd int := case when coalesce((fd->>'n')::int, 0) >= 3 then (fd->>'n')::int else 0 end;
+  ort numeric; ust numeric;
+begin
+  if ne > 0 then
+    s := ev || ' son ' || length(fe->>'form') || ' maçta ' || (fe->>'g5') || ' galibiyet, '
+         || (length(fe->>'form') - (fe->>'g5')::int - (fe->>'m5')::int) || ' beraberlik, ' || (fe->>'m5') || ' mağlubiyet aldı; '
+         || 'maç başı ' || (fe->>'gf') || ' gol atıp ' || (fe->>'ga') || ' gol yiyor'
+         || case when coalesce((fe->>'yn')::int, 0) > 0 then ' (iç sahada son ' || (fe->>'yn') || ' maçta ' || (fe->>'yg') || ' galibiyet)' else '' end || '. ';
+  end if;
+  if nd > 0 then
+    s := s || dep || ' son ' || length(fd->>'form') || ' maçta ' || (fd->>'g5') || ' galibiyet, '
+         || (length(fd->>'form') - (fd->>'g5')::int - (fd->>'m5')::int) || ' beraberlik, ' || (fd->>'m5') || ' mağlubiyet aldı; '
+         || 'maç başı ' || (fd->>'gf') || ' gol atıp ' || (fd->>'ga') || ' gol yiyor'
+         || case when coalesce((fd->>'yn')::int, 0) > 0 then ' (deplasmanda son ' || (fd->>'yn') || ' maçta ' || (fd->>'yg') || ' galibiyet)' else '' end || '. ';
+  end if;
+  if ne > 0 and nd > 0 and t in ('2.5 Üst', '2.5 Alt') then
+    ort := round(((fe->>'gf')::numeric + (fe->>'ga')::numeric + (fd->>'gf')::numeric + (fd->>'ga')::numeric) / 2, 1);
+    ust := round(((fe->>'ust')::numeric + (fd->>'ust')::numeric) / 2);
+    s := s || 'İki takımın maçlarında ortalama ' || ort || ' gol çıkıyor; 2.5 '
+         || case when t = '2.5 Üst' then 'Üst' else 'Alt' end || ' biten maç oranı: %'
+         || case when t = '2.5 Üst' then ust else 100 - ust end || '. ';
+  end if;
+  if ne = 0 and nd = 0 then
+    s := 'Takımlar için arşivde henüz yeterli maç yok; tahmin iddaa oranlarına dayanıyor. ';
+  end if;
+  if t = 'İY 1 / MS 2' then
+    s := s || 'İlk yarıyı ev sahibinin önde kapatıp maçı deplasmanın kazanması nadir görülen bir sonuç (oran ' || o || '). Yüksek riskli bir sürpriz tahminidir.';
+  else
+    s := s || 'Tahmin: ' || t || ', oran ' || o || ' (ima ettiği olasılık yaklaşık %' || g || ').';
+  end if;
+  return s;
+end $$;
+
 -- ===== 5) Tahmin üretme (form filtresi + oran yükseltme + sürpriz) =====
 create or replace function public.bot_uret(d date)
 returns int language plpgsql security definer set search_path to 'public' as $$
@@ -318,10 +356,13 @@ begin
       g := least(95, round(100 / o));
       continue when g is null;
 
-      insert into bot_picks(bot_id, gun, mac_id, lig, ev, dep, saat, tahmin, oran, guven, form, analiz_durum)
+      insert into bot_picks(bot_id, gun, mac_id, lig, ev, dep, saat, tahmin, oran, guven, form, analiz_durum, analiz, kaynaklar)
       values (b.id, d, x->>'id', x->>'lig', x->>'ev', x->>'dep', x->>'saat', t, o, g,
               jsonb_build_object('ev', fe, 'dep', fd),
-              case when analiz_var then 'bekliyor' else 'onay' end)
+              case when analiz_var then 'bekliyor' else 'onay' end,
+              case when analiz_var then null else analiz_sablon(t, x->>'ev', x->>'dep', fe, fd, o, g) end,
+              case when analiz_var then null else jsonb_build_array(jsonb_build_object(
+                'url', 'https://arsiv.mackolik.com/Mac/' || (x->>'id') || '/', 'baslik', 'Mackolik maç sayfası')) end)
       on conflict do nothing;
       if found then mevcut := mevcut + 1; n := n + 1; end if;
     end loop;

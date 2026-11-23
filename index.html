@@ -781,7 +781,7 @@ const bBox=b=>b.strateji=="surpriz"?`<div class="bbx"><b style="color:#EC4899">$
 async function vBot(){
   const P=[["bugun","Bugün"],["dun","Dün"],["ay","Bu Ay"],["gecen","Geçen Ay"],["tum","Tümü"]];
   $("v").innerHTML=ktabs()+`<div class="c bhero"><div style="display:flex;gap:12px;align-items:center"><div class="bav" style="--bc:#9B5CFF;width:48px;height:48px;font-size:24px">🤖</div><div><b style="font-size:17px">Goleo AI Botları</b><div class="lg" style="margin:3px 0 0"><span class="bon"></span>Otomatik çalışıyor · 15 dk'da bir tarar</div></div></div>
-  <div class="lg" style="margin:10px 0 0">Botlar iddaa oranlarını ve takımların son maç formunu tarar. Seçtikleri her maçı yapay zeka internette araştırır (sakatlar, cezalılar, kadro haberleri) ve onaylarsa yayınlar. Maç bitince sonuç otomatik işlenir; istatistikler gerçek sonuçlardan hesaplanır, kazanç garantisi vermez.</div></div>
+  <div class="lg" style="margin:10px 0 0">Botlar iddaa oranlarını ve takımların son maç formunu tarar. Her tahminin altında takımların form verisinden hazırlanan bir analiz bulunur. Maç bitince sonuç otomatik işlenir; istatistikler gerçek sonuçlardan hesaplanır, kazanç garantisi vermez.</div></div>
   <div class="sg bper">${P.map(([k,n])=>`<button class="${k==bP?"on":""}" onclick="bP='${k}';vBot()">${n}</button>`).join("")}</div><div id="bl"><div class="c" style="height:240px;opacity:.4"></div></div>`;
   const {data,error}=await sb.rpc("bot_istatistik",{per:bP});
   if(tab!="kup"||kT!="bot"||bSel||!$("bl"))return;
@@ -805,7 +805,7 @@ async function vBotD(){
     const fc=f=>f&&f.form?`<span class="fch">${[...f.form].map(c=>`<i class="${c=="G"?"w":c=="M"?"l":"d"}">${c}</i>`).join("")}</span>`:"";
     const fr=t.form&&(t.form.ev&&t.form.ev.form||t.form.dep&&t.form.dep.form)?`<div class="frm"><div><span>${e(t.ev)}</span>${fc(t.form.ev)}</div><div><span>${e(t.dep)}</span>${fc(t.form.dep)}</div></div>`:"";
     const big=Number(t.oran)>=5;
-    const an=!t.kilit&&t.analiz?`<details class="ban"><summary>🤖 Yapay zeka analizi</summary><p>${e(t.analiz)}</p>${(t.kaynaklar||[]).length?`<div class="bsrc">${t.kaynaklar.map(k=>`<a onclick="openL(BSRC[${BSRC.push(String(k.url||""))-1}])">${e(k.baslik||"Kaynak")}</a>`).join("")}</div>`:""}</details>`:"";
+    const an=!t.kilit&&t.analiz?`<details class="ban"><summary>📊 Maç analizi</summary><p>${e(t.analiz)}</p>${(t.kaynaklar||[]).length?`<div class="bsrc">${t.kaynaklar.map(k=>`<a onclick="openL(BSRC[${BSRC.push(String(k.url||""))-1}])">${e(k.baslik||"Kaynak")}</a>`).join("")}</div>`:""}</details>`:"";
     return `<div class="c"><div class="lg">${e(t.lig)} · ${e(t.saat)}</div><div class="tk"><span>${e(t.ev)} – ${e(t.dep)}</span>${t.kilit||big?"":`<span style="color:${gc(t.guven)}">%${t.guven}</span>`}</div>${fr}
     ${t.kilit?`<div class="bl"><div class="bx"><b>MS 1 · Oran 1.45</b><div>Güven %70</div></div><div class="ov"><button onclick="kT='kup';bSel=null;vipGit()">🔒 VIP ile aç</button></div></div>`
     :`<div style="margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b style="font-size:16px">${e(t.tahmin)}</b><span class="pk" style="margin:0;${big?"background:rgba(236,72,153,.16);color:#F9A8D4;border-color:rgba(236,72,153,.4);font-size:14px":""}">Oran ${Number(t.oran).toFixed(2)}</span>${sk}</div>`}<div>${dz}</div>${an}</div>`}).join(""):bos(key(bg)==key(new Date())?"Bu bot bugün henüz tahmin paylaşmadı. Uygun maç bulunca otomatik paylaşır.":"Bu gün için tahmin yok.");
