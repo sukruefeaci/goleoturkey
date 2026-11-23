@@ -138,6 +138,11 @@ body.in header h1::after{display:none}
 .pkc{margin:0;text-align:center;background:var(--s3)}.pkc>b{font-size:24px}.pkp{font-weight:700;margin:6px 0}
 .vpl{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;margin-bottom:10px;border-radius:16px;background:linear-gradient(180deg,rgba(245,197,66,.1),var(--s1));border:1px solid rgba(245,197,66,.35)}
 .vpl button{width:auto;margin:0;padding:10px 14px;background:linear-gradient(90deg,#FFD866,#F5C542);color:#2A1E00;box-shadow:none;flex:none}
+.bld{display:flex;align-items:center;gap:14px}.bld>div{flex:1;min-width:0}
+.sw{position:relative;flex:none;width:50px;height:30px;cursor:pointer}.sw input{position:absolute;opacity:0;width:0;height:0}
+.sw span{position:absolute;inset:0;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid var(--ln);transition:background .2s}
+.sw span::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .2s}
+.sw input:checked+span{background:linear-gradient(90deg,var(--pri),var(--pri2))}.sw input:checked+span::after{transform:translateX(20px)}
 .authc button{display:flex;justify-content:space-between;align-items:center;padding:16px 18px}
 .authc button.g{justify-content:center;background:none;border:0;color:var(--mut);font-weight:600}
 @keyframes glw{50%{box-shadow:0 0 40px var(--glow),inset 0 0 40px var(--glow),0 0 120px rgba(155,92,255,.5)}}
@@ -367,8 +372,13 @@ async function vPro(){
   <div class="row" style="margin-top:10px"><button onclick="puanAl()">💎 Puan Al</button><button class="vipb" onclick="vipOl()">👑 VIP Ol</button></div></div>
   <div class="c"><b>Davet et, kişi başı puan kazan</b><div class="lg" style="margin-top:6px">Kodun: <b>${e(prof.ref_code)}</b></div><input readonly value="${e(RL)}">
   <button onclick="kopyala()">Linki kopyala</button>${BOT?'<button class="g" onclick="tgPaylas()">Telegram\'da paylaş</button>':""}</div>
+  <div class="c bld"><div><b>🔔 Telegram bildirimleri</b><div class="lg" style="margin:3px 0 0">Sabah bot tahminleri ve Sürpriz Bot duyuruları. Satın aldığın VIP tahminlerin sonucu her zaman bildirilir.</div></div><label class="sw"><input type="checkbox" ${prof.bildirim!==false?"checked":""} onchange="bildirimAyar(this)"><span></span></label></div>
   <div class="c"><b>Son puanlar</b>${lg}</div><button class="g" onclick="sb.auth.signOut()">Çıkış yap</button>`;
 }
+async function bildirimAyar(el){
+  const v=el.checked,{error}=await sb.from("profiles").update({bildirim:v}).eq("id",me.id);
+  if(error){el.checked=!v;return toast("Kaydedilemedi")}
+  prof.bildirim=v;lsS("gp_"+me.id,prof);toast(v?"Bildirimler açık 🔔":"Bildirimler kapatıldı")}
 /* CEKILIS (Profil > Cekilis) */
 async function vCek(){
   const [rs,pf]=await Promise.all([
