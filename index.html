@@ -4,6 +4,8 @@
 <meta name="theme-color" content="#09070F">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Goleo</title>
+<link rel="preconnect" href="https://iaomtetwapkqaudmdzit.supabase.co" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.js"></script>
 <style>
@@ -116,6 +118,8 @@ body.auth header{display:none}
 .ban summary{cursor:pointer;font-size:13px;font-weight:700;color:#D9C2FF;list-style:none}.ban summary::-webkit-details-marker{display:none}.ban summary::after{content:" ▾";color:var(--mut)}
 .ban p{margin:8px 0 0;font-size:13.5px;line-height:1.5;color:var(--tx)}
 .bsrc{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.bsrc a{font-size:11.5px;color:#C9A8FF;background:rgba(255,255,255,.04);border:1px solid var(--ln);border-radius:999px;padding:4px 9px;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.skel{height:90px;border-radius:22px;margin-bottom:14px;background:linear-gradient(90deg,var(--s1) 25%,var(--s2) 37%,var(--s1) 63%);background-size:400% 100%;animation:shm 1.2s ease infinite}
+@keyframes shm{0%{background-position:100% 50%}100%{background-position:0 50%}}
 .authc button{display:flex;justify-content:space-between;align-items:center;padding:16px 18px}
 .authc button.g{justify-content:center;background:none;border:0;color:var(--mut);font-weight:600}
 @keyframes glw{50%{box-shadow:0 0 40px var(--glow),inset 0 0 40px var(--glow),0 0 120px rgba(155,92,255,.5)}}
@@ -148,17 +152,38 @@ const hata=m=>({"Invalid login credentials":"E-posta veya şifre hatalı","User 
 function openL(u){if(!u||!okUrl(u))return;if(tg&&/^https:\/\/t\.me\//i.test(u))tg.openTelegramLink(u);else if(tg)tg.openLink(u);else window.open(u,"_blank")}
 
 sb.auth.onAuthStateChange((_,s)=>{const id=s?s.user.id:null;if(id===cur)return;cur=id;me=s?s.user:null;setTimeout(start,0)});
+/* hizli acilis: son profil ve sayfalar telefonda saklanir, taze veri gelince yenilenir */
+const SKEL='<div class="skel"></div><div class="skel" style="height:150px"></div><div class="skel"></div>';
+let VC={};
+const lsG=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(x){return null}};
+const lsS=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(x){}};
+function navCiz(){
+  $("pt").textContent="⭐ "+prof.points;
+  const T=[["sp","🤝","Sponsorlar"],["kup","🎫","Kupon"],["top","💬","Topluluk"],["fik","📅","Fikstür"],["pro","👤","Profil"]];
+  if(prof.is_admin)T.push(["adm","⚙️","Admin"]);
+  $("nav").innerHTML=T.map(([k,i,n])=>`<a id="n-${k}" class="${k==tab?"on":""}" onclick="go('${k}')"><i>${i}</i>${n}</a>`).join("");
+  $("nav").style.display="flex";
+}
 async function start(){
   document.body.classList.toggle("auth",!me);
   if(!me){$("nav").style.display="none";$("pt").textContent="";return authV()}
-  const {data}=await sb.from("profiles").select("*").eq("id",me.id).single();
-  prof=data;$("pt").textContent="⭐ "+prof.points;
-  const T=[["sp","🤝","Sponsorlar"],["kup","🎫","Kupon"],["top","💬","Topluluk"],["fik","📅","Fikstür"],["pro","👤","Profil"]];
-  if(prof.is_admin)T.push(["adm","⚙️","Admin"]);
-  $("nav").innerHTML=T.map(([k,i,n])=>`<a id="n-${k}" onclick="go('${k}')"><i>${i}</i>${n}</a>`).join("");
-  $("nav").style.display="flex";go(tab);
+  VC=lsG("gvc_"+me.id)||{};
+  const c=lsG("gp_"+me.id),fresh=sb.from("profiles").select("*").eq("id",me.id).single();
+  if(c){prof=c;navCiz();go(tab)}
+  const {data}=await fresh;
+  if(!data){if(!c)toast("Profil yüklenemedi");return}
+  const adm=c&&!!c.is_admin;prof=data;lsS("gp_"+me.id,data);
+  if(!c){navCiz();go(tab)}else{$("pt").textContent="⭐ "+prof.points;if(adm!=!!data.is_admin)navCiz()}
 }
-function go(t){clearInterval(cdT);tab=t;document.querySelectorAll("nav a").forEach(a=>a.className=a.id=="n-"+t?"on":"");({sp:vSp,kup:vKup,top:vTop,sir:vSir,fik:vFik,pro:vPro,adm:vAdm})[t]()}
+const vKey=t=>t+(t=="kup"?":"+kT+(bSel||""):t=="pro"?":"+pT:t=="top"?":"+ts2:"");
+function go(t){
+  clearInterval(cdT);tab=t;document.querySelectorAll("nav a").forEach(a=>a.className=a.id=="n-"+t?"on":"");
+  const k=vKey(t);$("v").innerHTML=VC[k]||SKEL;window.scrollTo(0,0);
+  Promise.resolve(({sp:vSp,kup:vKup,top:vTop,sir:vSir,fik:vFik,pro:vPro,adm:vAdm})[t]()).then(()=>{
+    if(tab!=t||vKey(t)!=k||t=="adm"||t=="fik")return;
+    VC[k]=$("v").innerHTML;lsS("gvc_"+me.id,VC);
+  }).catch(()=>{});
+}
 
 /* GIRIS */
 function authV(){
@@ -369,7 +394,7 @@ async function vipAl(id,p){
   if(!confirm(p+" puan harcanacak. Onaylıyor musun?"))return;
   const {data,error}=await sb.rpc("vip_buy",{tid:id});
   if(error||!data)return toast("Satın alınamadı");
-  toast(data.msg);if(data.ok)vPro()}
+  toast(data.msg);if(data.ok){VSB.p=null;vPro()}}
 function pkAl(id){
   const x=PK[id],u=CFG.admin_tg;
   if(!u||!okUrl(u))return toast("Satın alma linki henüz ayarlanmamış");
@@ -386,7 +411,7 @@ async function cKatil(id){
   const n=parseInt($("cn").value)||1;
   const {data,error}=await sb.rpc("raffle_join",{rid:id,n});
   if(error||!data)return toast("Katılınamadı, tekrar dene");
-  toast(data.msg);if(data.ok)vPro()}
+  toast(data.msg);if(data.ok){VSB.p=null;vPro()}}
 
 /* ADMIN */
 const ab=h=>{const x=$("ab");if(!x||tab!="adm")return false;x.innerHTML=h;return true};
@@ -568,15 +593,18 @@ async function pkKaydet(id){
 /* VIP ABONELIK */
 const pcq=id=>document.querySelector('.pc[data-id="'+id+'"]');
 const trD=d=>new Date(d).toLocaleDateString("tr-TR",{day:"numeric",month:"long",year:"numeric"});
-async function vipSub(){
+let VSB={t:0,p:null};
+function vipSub(){if(VSB.p&&Date.now()-VSB.t<60000)return VSB.p;VSB={t:Date.now(),p:vipSub0()};return VSB.p}
+async function vipSub0(){
   const {data}=await sb.from("vip_subs").select("ends_at").eq("user_id",me.id).gt("ends_at",new Date().toISOString()).order("ends_at",{ascending:false}).limit(1);
   return data&&data[0]?data[0].ends_at:null}
 
 const _vPro2=vPro;
 vPro=async function(){
+  const ek=Promise.all([sb.from("vip_plans").select("*").eq("active",true).order("sort").order("id"),vipSub()]);
   await _vPro2();
   if(tab!="pro")return;
-  const [pl,end]=await Promise.all([sb.from("vip_plans").select("*").eq("active",true).order("sort").order("id"),vipSub()]);
+  const [pl,end]=await ek;
   if(tab!="pro")return;
   const h=`<div class="c" id="vsub" style="border:1.5px solid #F5C542;background:linear-gradient(180deg,rgba(245,197,66,.1),var(--s1))"><b>👑 VIP Üyelik</b>
   <div class="lg" style="margin-top:4px">Üyelik süresince tüm VIP tahminleri görürsün. Süre dolunca tek tek satın aldıkların açık kalır. Tahminler kazanç garantisi vermez.</div>
@@ -592,13 +620,14 @@ async function planAl(id,p,d){
   if(!confirm(p+" puan harcanacak, "+d+" gün VIP açılacak. Onaylıyor musun?"))return;
   const {data,error}=await sb.rpc("vip_sub_buy",{pid:id});
   if(error||!data)return toast("Satın alınamadı");
-  toast(data.msg);if(data.ok)vPro()}
+  toast(data.msg);if(data.ok){VSB.p=null;vPro()}}
 
 const _vKup2=vKup;
 vKup=async function(){
+  const ek=vipSub();
   await _vKup2();
   if(tab!="kup")return;
-  const end=await vipSub();
+  const end=await ek;
   if(end&&tab=="kup")$("v").insertAdjacentHTML("afterbegin",`<div class="pk y" style="display:block;margin-bottom:10px;text-align:center">👑 VIP üyeliğin ${trD(end)} tarihine kadar aktif</div>`);
 };
 
