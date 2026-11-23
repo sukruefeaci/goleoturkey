@@ -28,7 +28,7 @@ begin
     limit 3) z;
   msg := '☀️ Günaydın! Goleo AI botları bugün ' || adet || ' tahmin paylaştı.' ||
          coalesce(E'\n\n' || ornek, '') ||
-         E'\n\n🤖 Tümü: Kupon › AI Botlar' || E'\nhttps://t.me/goleoaibot?startapp';
+         E'\n\n🤖 Tümü: AI Botlar sekmesi' || E'\nhttps://t.me/goleoaibot?startapp';
   insert into bildirim_kuyruk(user_id, msg)
   select c.user_id, msg from tg_chats c where bildirim_acik(c.user_id, 'sabah');
   get diagnostics n = row_count;
@@ -59,7 +59,7 @@ begin
     msg := '💣 SÜRPRİZ BOT TUTTU!' || E'\n' || new.ev || ' – ' || new.dep ||
            coalesce(' (' || new.s1 || '-' || new.s2 || ')', '') ||
            E'\n' || new.tahmin || ' · Oran ' || new.oran ||
-           E'\n\n🤖 Botların bugünkü tahminleri: Kupon › AI Botlar' || E'\nhttps://t.me/goleoaibot?startapp';
+           E'\n\n🤖 Botların bugünkü tahminleri: AI Botlar sekmesi' || E'\nhttps://t.me/goleoaibot?startapp';
     insert into bildirim_kuyruk(user_id, msg)
     select c.user_id, msg from tg_chats c where bildirim_acik(c.user_id, 'surpriz');
   end if;
@@ -112,7 +112,7 @@ begin
                   or exists (select 1 from profiles pr where pr.id = t.user_id and pr.is_admin)
                 then E':\n\n' || liste
                 else E'.\n\n🔒 Bu bir VIP bot; tahminleri görmek için VIP ol.' end ||
-           E'\n\n🤖 Kupon › AI Botlar' || E'\nhttps://t.me/goleoaibot?startapp'
+           E'\n\n🤖 AI Botlar sekmesi' || E'\nhttps://t.me/goleoaibot?startapp'
     from bot_takip t
     where t.bot_id = b.id and bildirim_acik(t.user_id, 'takip');
     get diagnostics k = row_count; n := n + k;

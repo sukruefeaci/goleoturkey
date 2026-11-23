@@ -104,7 +104,7 @@ begin
     limit 3) z;
   msg := '☀️ Günaydın! Goleo AI botları bugün ' || adet || ' tahmin paylaştı.' ||
          coalesce(E'\n\n' || ornek, '') ||
-         E'\n\n🤖 Tümü: Kupon › AI Botlar' || E'\nhttps://t.me/goleoaibot?startapp' ||
+         E'\n\n🤖 Tümü: AI Botlar sekmesi' || E'\nhttps://t.me/goleoaibot?startapp' ||
          E'\n\nBildirimleri Profil sayfasından kapatabilirsin.';
   insert into bildirim_kuyruk(user_id, msg)
   select c.user_id, msg from tg_chats c join profiles p on p.id = c.user_id where p.bildirim;
@@ -141,7 +141,7 @@ begin
     msg := '💣 SÜRPRİZ BOT TUTTU!' || E'\n' || new.ev || ' – ' || new.dep ||
            coalesce(' (' || new.s1 || '-' || new.s2 || ')', '') ||
            E'\n' || new.tahmin || ' · Oran ' || new.oran ||
-           E'\n\n🤖 Botların bugünkü tahminleri: Kupon › AI Botlar' || E'\nhttps://t.me/goleoaibot?startapp';
+           E'\n\n🤖 Botların bugünkü tahminleri: AI Botlar sekmesi' || E'\nhttps://t.me/goleoaibot?startapp';
     insert into bildirim_kuyruk(user_id, msg)
     select c.user_id, msg from tg_chats c join profiles p on p.id = c.user_id where p.bildirim;
   end if;
