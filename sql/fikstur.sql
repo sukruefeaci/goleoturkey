@@ -45,8 +45,9 @@ begin
              'dep', r->>4,
              'st',  r->>5,
              'dk',  r->>6,
-             's1',  nullif(trim(split_part(r->>7, '-', 1)), ''),
-             's2',  nullif(trim(split_part(r->>7, '-', 2)), ''),
+             's1',  r->>12,
+             's2',  r->>13,
+             'iy',  nullif(r->>7, ''),
              'saat', r->>16,
              'lig', case when jsonb_typeof(r->36) = 'array'
                          then trim(coalesce(r->36->>1, '') || ' ' || coalesce(r->36->>3, '')) end)
