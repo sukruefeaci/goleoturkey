@@ -270,7 +270,7 @@ const TUR=[["tekli","TEKLİ KUPON"],["ikili","2'Lİ KUPON"],["uclu","3'LÜ KUPON
 function vc(t){
   const ust=`<div class="lg">${e(t.lig)} · ${e(t.saat)}</div><div class="tk"><span>${e(t.ev)} – ${e(t.dep)}</span>${t.owned?`<span style="color:${gc(t.guven)}">%${e(t.guven)}</span>`:""}</div>`;
   const alt=t.owned?`<div style="margin-top:6px;font-weight:700">${e(t.tahmin)}</div>`
-   :`<div class="bl"><div class="bx"><b>MS 1 · 2.5 Üst · KG Var</b><div>Güven %88</div></div><div class="ov"><button onclick="vipGit()">🔒 VIP AL · ${t.price} puan</button></div></div>`;
+   :`<div class="bl"><div class="bx"><b>MS 1 · 2.5 Üst · KG Var</b><div>Güven %88</div></div><div class="ov"><button onclick="vipAl(${t.id},${t.price})">🔒 VIP AL · ${t.price} puan</button></div></div>`;
   return `<div class="c">${ust}${alt}${rz(t.durum)}</div>`}
 /* KUPON ISTATISTIK (gunluk) */
 function kIstH(L){
@@ -438,7 +438,7 @@ async function vipAl(id,p){
   if(!confirm(p+" puan harcanacak. Onaylıyor musun?"))return;
   const {data,error}=await sb.rpc("vip_buy",{tid:id});
   if(error||!data)return toast("Satın alınamadı");
-  toast(data.msg);if(data.ok){VSB.p=null;puanTazele();vipOl()}}
+  toast(data.msg);if(data.ok){VSB.p=null;puanTazele();if($("sh"))vipOl();else if(tab=="kup")vKup()}}
 function pkAl(id){
   const x=PK[id],u=CFG.admin_tg;
   if(!u||!okUrl(u))return toast("Satın alma linki henüz ayarlanmamış");
