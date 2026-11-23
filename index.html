@@ -143,6 +143,11 @@ body.in header h1::after{display:none}
 .sw span{position:absolute;inset:0;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid var(--ln);transition:background .2s}
 .sw span::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .2s}
 .sw input:checked+span{background:linear-gradient(90deg,var(--pri),var(--pri2))}.sw input:checked+span::after{transform:translateX(20px)}
+.bsat{padding:12px 0 0;margin-top:12px;border-top:1px solid var(--ln)}.bsat b{font-size:14px}
+.blist.kapali{opacity:.45}
+.sw.sm{width:44px;height:26px}.sw.sm span::after{width:18px;height:18px}.sw.sm input:checked+span::after{transform:translateX(18px)}
+.bstar{display:inline-flex;width:auto;margin:0 0 0 2px;padding:0 4px;background:none;border:0;box-shadow:none;color:var(--mut);font-size:18px;line-height:1;vertical-align:-1px}
+.bstar.on{color:#F5C542;text-shadow:0 0 10px rgba(245,197,66,.5)}
 .authc button{display:flex;justify-content:space-between;align-items:center;padding:16px 18px}
 .authc button.g{justify-content:center;background:none;border:0;color:var(--mut);font-weight:600}
 @keyframes glw{50%{box-shadow:0 0 40px var(--glow),inset 0 0 40px var(--glow),0 0 120px rgba(155,92,255,.5)}}
@@ -372,13 +377,23 @@ async function vPro(){
   <div class="row" style="margin-top:10px"><button onclick="puanAl()">💎 Puan Al</button><button class="vipb" onclick="vipOl()">👑 VIP Ol</button></div></div>
   <div class="c"><b>Davet et, kişi başı puan kazan</b><div class="lg" style="margin-top:6px">Kodun: <b>${e(prof.ref_code)}</b></div><input readonly value="${e(RL)}">
   <button onclick="kopyala()">Linki kopyala</button>${BOT?'<button class="g" onclick="tgPaylas()">Telegram\'da paylaş</button>':""}</div>
-  <div class="c bld"><div><b>🔔 Telegram bildirimleri</b><div class="lg" style="margin:3px 0 0">Sabah bot tahminleri ve Sürpriz Bot duyuruları. Satın aldığın VIP tahminlerin sonucu her zaman bildirilir.</div></div><label class="sw"><input type="checkbox" ${prof.bildirim!==false?"checked":""} onchange="bildirimAyar(this)"><span></span></label></div>
+  ${bAyarH()}
   <div class="c"><b>Son puanlar</b>${lg}</div><button class="g" onclick="sb.auth.signOut()">Çıkış yap</button>`;
 }
+const BTUR=[["sabah","☀️ Sabah bot özeti","Her sabah 09:35, günün bot tahminleri"],["takip","⭐ Takip ettiğin botlar","Yıldızladığın bot tahmin paylaşınca"],["kupon","🎫 Yeni kupon","Yeni kupon yayınlanınca"],["gunsonu","🌙 Gün sonu özeti","Her gece 00:00, günün sonuçları"],["surpriz","💣 Sürpriz Bot","Sürpriz Bot tuttuğunda"],["vip","👑 VIP sonuçları","Aldığın VIP tahmin tuttuğunda"]];
+function bAyarH(){
+  const ana=prof.bildirim!==false,A=prof.bildirim_ayar||{};
+  return `<div class="c" id="bayar"><div class="bld"><div><b>🔔 Bildirimler</b><div class="lg" style="margin:3px 0 0">Telegram'dan almak istediklerini seç. Bildirimler, uygulamayı Telegram'dan açtığın hesaba gelir.</div></div><label class="sw"><input type="checkbox" ${ana?"checked":""} onchange="bildirimAyar(this)"><span></span></label></div>
+  <div class="blist ${ana?"":"kapali"}">${BTUR.map(([k,t,d])=>`<div class="bld bsat"><div><b>${t}</b><div class="lg" style="margin:2px 0 0">${d}</div></div><label class="sw sm"><input type="checkbox" ${A[k]!==false?"checked":""} ${ana?"":"disabled"} onchange="bTurAyar('${k}',this)"><span></span></label></div>`).join("")}</div></div>`}
 async function bildirimAyar(el){
   const v=el.checked,{error}=await sb.from("profiles").update({bildirim:v}).eq("id",me.id);
   if(error){el.checked=!v;return toast("Kaydedilemedi")}
-  prof.bildirim=v;lsS("gp_"+me.id,prof);toast(v?"Bildirimler açık 🔔":"Bildirimler kapatıldı")}
+  prof.bildirim=v;lsS("gp_"+me.id,prof);const x=$("bayar");if(x)x.outerHTML=bAyarH();toast(v?"Bildirimler açık 🔔":"Tüm bildirimler kapatıldı")}
+async function bTurAyar(k,el){
+  const A={...(prof.bildirim_ayar||{}),[k]:el.checked};
+  const {error}=await sb.from("profiles").update({bildirim_ayar:A}).eq("id",me.id);
+  if(error){el.checked=!el.checked;return toast("Kaydedilemedi")}
+  prof.bildirim_ayar=A;lsS("gp_"+me.id,prof);toast("Kaydedildi ✓")}
 /* CEKILIS (Profil > Cekilis) */
 async function vCek(){
   const [rs,pf]=await Promise.all([
@@ -834,6 +849,15 @@ function fCiz(){
 
 /* AI BOTLAR */
 let kT="kup",bP="tum",bSel=null,bg=new Date(),BOTS=[],BSRC=[];
+let BTK=new Set();
+const bTkGet=()=>sb.from("bot_takip").select("bot_id").then(r=>{if(!r.error)BTK=new Set((r.data||[]).map(x=>x.bot_id))});
+const bStar=id=>`<button class="bstar ${BTK.has(id)?"on":""}" onclick="event.stopPropagation();bTakip(${id},this)" aria-label="Takip et">${BTK.has(id)?"★":"☆"}</button>`;
+async function bTakip(id,el){
+  const on=!BTK.has(id);on?BTK.add(id):BTK.delete(id);
+  document.querySelectorAll('.bstar[onclick*="bTakip('+id+',"]').forEach(x=>{x.classList.toggle("on",on);x.textContent=on?"★":"☆"});
+  const r=on?await sb.from("bot_takip").insert({bot_id:id}):await sb.from("bot_takip").delete().eq("bot_id",id).eq("user_id",me.id);
+  if(r.error){on?BTK.delete(id):BTK.add(id);document.querySelectorAll('.bstar[onclick*="bTakip('+id+',"]').forEach(x=>{x.classList.toggle("on",!on);x.textContent=!on?"★":"☆"});return toast("Kaydedilemedi")}
+  toast(on?"⭐ Takip ediliyor, yeni tahminlerde Telegram'dan haber vereceğiz":"Takip bırakıldı")}
 const ktabs=()=>`<div class="sg" id="ktabs"><button class="${kT=="kup"?"on":""}" onclick="kT='kup';bSel=null;vKup()">🎫 Kuponlar</button><button class="${kT=="bot"?"on":""}" onclick="kT='bot';vKup()">🤖 AI Botlar</button></div>`;
 const _vKup3=vKup;
 vKup=async function(){
@@ -851,17 +875,18 @@ async function vBot(){
   $("v").innerHTML=ktabs()+`<div class="c bhero"><div style="display:flex;gap:12px;align-items:center"><div class="bav" style="--bc:#9B5CFF;width:48px;height:48px;font-size:24px">🤖</div><div><b style="font-size:17px">Goleo AI Botları</b><div class="lg" style="margin:3px 0 0"><span class="bon"></span>Otomatik çalışıyor · 15 dk'da bir tarar</div></div></div>
   <div class="lg" style="margin:10px 0 0">Botlar iddaa oranlarını ve takımların son maç formunu tarar. Her tahminin altında takımların form verisinden hazırlanan bir analiz bulunur. Maç bitince sonuç otomatik işlenir; istatistikler gerçek sonuçlardan hesaplanır, kazanç garantisi vermez.</div></div>
   <div class="sg bper">${P.map(([k,n])=>`<button class="${k==bP?"on":""}" onclick="bP='${k}';vBot()">${n}</button>`).join("")}</div><div id="bl"><div class="c" style="height:240px;opacity:.4"></div></div>`;
-  const {data,error}=await sb.rpc("bot_istatistik",{per:bP});
+  const [{data,error}]=await Promise.all([sb.rpc("bot_istatistik",{per:bP}),bTkGet()]);
   if(tab!="kup"||kT!="bot"||bSel||!$("bl"))return;
   BOTS=data||[];
-  $("bl").innerHTML=error?bos("Botlar yüklenemedi."):BOTS.length?`<div class="c" style="padding:6px 14px">${BOTS.map(b=>`<div class="brow" onclick="bSel=${b.id};bg=new Date();vBotD()">${bAv(b)}<div class="bnm"><b>${e(b.ad)}</b>${bDots(b.son5)}</div>${bBox(b)}</div>`).join("")}</div>`:bos("Henüz bot yok.");
+  $("bl").innerHTML=error?bos("Botlar yüklenemedi."):BOTS.length?`<div class="c" style="padding:6px 14px">${BOTS.map(b=>`<div class="brow" onclick="bSel=${b.id};bg=new Date();vBotD()">${bAv(b)}<div class="bnm"><b>${e(b.ad)} ${bStar(b.id)}</b>${bDots(b.son5)}</div>${bBox(b)}</div>`).join("")}</div>`:bos("Henüz bot yok.");
 }
 async function vBotD(){
   const id=bSel,d=key(bg);
   let b=BOTS.find(x=>x.id==id);
+  if(!BTK.size)await bTkGet();
   if(!b){const {data}=await sb.rpc("bot_istatistik",{per:"tum"});BOTS=data||[];b=BOTS.find(x=>x.id==id);if(!b){bSel=null;return vBot()}}
   $("v").innerHTML=ktabs()+`<button class="g" style="width:auto;padding:9px 14px;margin:0 0 12px" onclick="bSel=null;vBot()">‹ Tüm botlar</button>
-  <div class="c"><div style="display:flex;gap:12px;align-items:center">${bAv(b,56)}<div style="flex:1;min-width:0"><b style="font-size:19px">${e(b.ad)}${b.vip?' <span class="bvip">VIP</span>':""}</b><div class="lg" style="margin:3px 0 0">${e(b.aciklama||"")}</div>${bDots(b.son5)}</div></div>
+  <div class="c"><div style="display:flex;gap:12px;align-items:center">${bAv(b,56)}<div style="flex:1;min-width:0"><b style="font-size:19px">${e(b.ad)}${b.vip?' <span class="bvip">VIP</span>':""} ${bStar(b.id)}</b><div class="lg" style="margin:3px 0 0">${e(b.aciklama||"")}</div>${bDots(b.son5)}</div></div>
   <div class="bstat">${bBox(b)}</div>${b.strateji=="surpriz"&&b.son_tutan_oran?`<div class="pk" style="display:block;text-align:center;margin-top:10px;background:rgba(236,72,153,.14);color:#F9A8D4;border-color:rgba(236,72,153,.35)">💥 Son tutan: ${bGun(b.son_tutan)} önce · oran ${Number(b.son_tutan_oran).toFixed(2)}</div>`:""}<div class="lg" style="text-align:center;margin:8px 0 0">${bP=="tum"?"Tüm zamanlar":"Seçili dönem"}${b.bekleyen?` · ${b.bekleyen} tahmin sonuç bekliyor`:""} · Başarı sonuçlananlardan hesaplanır</div></div>
   <div class="dt"><button onclick="bg.setDate(bg.getDate()-1);vBotD()">‹</button><span>${bg.toLocaleDateString("tr-TR",{day:"numeric",month:"long",weekday:"long"})}</span><button onclick="bg.setDate(bg.getDate()+1);vBotD()">›</button></div><div id="bt"><div class="c" style="height:120px;opacity:.4"></div></div>`;
   const {data,error}=await sb.rpc("bot_tahminler",{bid:id,d});
