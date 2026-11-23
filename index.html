@@ -380,7 +380,7 @@ async function vPro(){
   ${bAyarH()}
   <div class="c"><b>Son puanlar</b>${lg}</div><button class="g" onclick="sb.auth.signOut()">Çıkış yap</button>`;
 }
-const BTUR=[["sabah","☀️ Sabah bot özeti","Her sabah 09:35, günün bot tahminleri"],["takip","⭐ Takip ettiğin botlar","Yıldızladığın bot tahmin paylaşınca"],["kupon","🎫 Yeni kupon","Yeni kupon yayınlanınca"],["gunsonu","🌙 Gün sonu özeti","Her gece 00:00, günün sonuçları"],["surpriz","💣 Sürpriz Bot","Sürpriz Bot tuttuğunda"],["vip","👑 VIP sonuçları","Aldığın VIP tahmin tuttuğunda"]];
+const BTUR=[["sabah","☀️ Sabah bot özeti","Her sabah 09:35, günün bot tahminleri"],["takip","⭐ Takip ettiğin botlar","Yıldızladığın bot tahmin paylaşınca ve tahmini tutunca"],["kupon","🎫 Yeni kupon","Yeni kupon yayınlanınca"],["gunsonu","🌙 Gün sonu özeti","Her gece 00:00, günün sonuçları"],["surpriz","💣 Sürpriz Bot","Sürpriz Bot tuttuğunda"],["vip","👑 VIP sonuçları","Aldığın VIP tahmin tuttuğunda"]];
 function bAyarH(){
   const ana=prof.bildirim!==false,A=prof.bildirim_ayar||{};
   return `<div class="c" id="bayar"><div class="bld"><div><b>🔔 Bildirimler</b><div class="lg" style="margin:3px 0 0">Telegram'dan almak istediklerini seç. Bildirimler, uygulamayı Telegram'dan açtığın hesaba gelir.</div></div><label class="sw"><input type="checkbox" ${ana?"checked":""} onchange="bildirimAyar(this)"><span></span></label></div>
