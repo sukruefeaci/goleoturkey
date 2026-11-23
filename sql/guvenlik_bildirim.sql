@@ -68,11 +68,17 @@ returns int language plpgsql security definer set search_path to 'public' as $$
 declare r record; n int := 0; tur int;
 begin
   for tur in 1 .. 4 loop                       -- dakikada en fazla 4 x 25 mesaj
-    for r in select id, user_id, msg from bildirim_kuyruk
-             where sent_at is null order by id limit 25 for update skip locked loop
-      perform tg_notify(r.user_id, r.msg);
+    for r in select k.id, k.user_id, k.msg, c.tg_id
+             from bildirim_kuyruk k left join tg_chats c on c.user_id = k.user_id
+             where k.sent_at is null order by k.id limit 25 for update of k skip locked loop
+      -- aynı Telegram hesabına (birden fazla Goleo hesabı bağlıysa) aynı mesaj 30 dk içinde tekrar gitmesin
+      if r.tg_id is not null and not exists (
+           select 1 from bildirim_kuyruk k2 join tg_chats c2 on c2.user_id = k2.user_id
+           where c2.tg_id = r.tg_id and k2.msg = r.msg and k2.sent_at > now() - interval '30 minutes') then
+        perform tg_notify(r.user_id, r.msg);
+        n := n + 1;
+      end if;
       update bildirim_kuyruk set sent_at = now() where id = r.id;
-      n := n + 1;
     end loop;
     exit when not exists (select 1 from bildirim_kuyruk where sent_at is null);
     perform pg_sleep(1.5);
