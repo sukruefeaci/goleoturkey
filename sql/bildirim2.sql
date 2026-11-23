@@ -28,7 +28,7 @@ begin
     limit 3) z;
   msg := '☀️ Günaydın! Goleo AI botları bugün ' || adet || ' tahmin paylaştı.' ||
          coalesce(E'\n\n' || ornek, '') ||
-         E'\n\n🤖 Tümü: Kupon › AI Botlar' || E'\nhttps://t.me/goleoaibot?startapp';
+         E'\n\n🤖 Tümü: AI Botlar sekmesi' || E'\nhttps://t.me/goleoaibot?startapp';
   insert into bildirim_kuyruk(user_id, msg)
   select c.user_id, msg from tg_chats c where bildirim_acik(c.user_id, 'sabah');
   get diagnostics n = row_count;
@@ -59,7 +59,7 @@ begin
     msg := '💣 SÜRPRİZ BOT TUTTU!' || E'\n' || new.ev || ' – ' || new.dep ||
            coalesce(' (' || new.s1 || '-' || new.s2 || ')', '') ||
            E'\n' || new.tahmin || ' · Oran ' || new.oran ||
-           E'\n\n🤖 Botların bugünkü tahminleri: Kupon › AI Botlar' || E'\nhttps://t.me/goleoaibot?startapp';
+           E'\n\n🤖 Botların bugünkü tahminleri: AI Botlar sekmesi' || E'\nhttps://t.me/goleoaibot?startapp';
     insert into bildirim_kuyruk(user_id, msg)
     select c.user_id, msg from tg_chats c where bildirim_acik(c.user_id, 'surpriz');
   end if;
@@ -112,7 +112,7 @@ begin
                   or exists (select 1 from profiles pr where pr.id = t.user_id and pr.is_admin)
                 then E':\n\n' || liste
                 else E'.\n\n🔒 Bu bir VIP bot; tahminleri görmek için VIP ol.' end ||
-           E'\n\n🤖 Kupon › AI Botlar' || E'\nhttps://t.me/goleoaibot?startapp'
+           E'\n\n🤖 AI Botlar sekmesi' || E'\nhttps://t.me/goleoaibot?startapp'
     from bot_takip t
     where t.bot_id = b.id and bildirim_acik(t.user_id, 'takip');
     get diagnostics k = row_count; n := n + k;
@@ -129,12 +129,11 @@ declare msg text; liste text; ad text;
 begin
   if new.gun < (now() at time zone 'Europe/Istanbul')::date then return new; end if;
   ad := case new.tur when 'tekli' then 'Tekli' when 'ikili' then '2''li' when 'uclu' then '3''lü' else coalesce(new.tur, '') end;
-  select string_agg('• ' || coalesce(i->>'saat', '') || ' ' || coalesce(i->>'ev', '') || ' – ' || coalesce(i->>'dep', '') ||
-                    coalesce(' · ' || nullif(i->>'tahmin', ''), ''), E'\n')
+  select string_agg('• ' || coalesce(i->>'saat', '') || ' ' || coalesce(i->>'ev', '') || ' – ' || coalesce(i->>'dep', ''), E'\n')
     into liste from jsonb_array_elements(case when jsonb_typeof(new.items) = 'array' then new.items else '[]'::jsonb end) i;
   msg := '🎫 Yeni kupon yayında! (' || ad || ' · ' || to_char(new.gun, 'DD.MM') || ')' ||
          coalesce(E'\n\n' || liste, '') ||
-         E'\n\n📲 Kupon sekmesinde' || E'\nhttps://t.me/goleoaibot?startapp';
+         E'\n\n📲 Tahminler Kupon sekmesinde' || E'\nhttps://t.me/goleoaibot?startapp';
   insert into bildirim_kuyruk(user_id, msg)
   select c.user_id, msg from tg_chats c where bildirim_acik(c.user_id, 'kupon');
   return new;
@@ -192,9 +191,35 @@ begin
   return n;
 end $$;
 
+-- ===== 4b) Gönderici: aynı Telegram hesabına tekrar eden mesajı atla =====
+create or replace function public.bildirim_gonder()
+returns int language plpgsql security definer set search_path to 'public' as $$
+declare r record; n int := 0; tur int;
+begin
+  for tur in 1 .. 4 loop                       -- dakikada en fazla 4 x 25 mesaj
+    for r in select k.id, k.user_id, k.msg, c.tg_id
+             from bildirim_kuyruk k left join tg_chats c on c.user_id = k.user_id
+             where k.sent_at is null order by k.id limit 25 for update of k skip locked loop
+      -- aynı Telegram hesabına (birden fazla Goleo hesabı bağlıysa) aynı mesaj 30 dk içinde tekrar gitmesin
+      if r.tg_id is not null and not exists (
+           select 1 from bildirim_kuyruk k2 join tg_chats c2 on c2.user_id = k2.user_id
+           where c2.tg_id = r.tg_id and k2.msg = r.msg and k2.sent_at > now() - interval '30 minutes') then
+        perform tg_notify(r.user_id, r.msg);
+        n := n + 1;
+      end if;
+      update bildirim_kuyruk set sent_at = now() where id = r.id;
+    end loop;
+    exit when not exists (select 1 from bildirim_kuyruk where sent_at is null);
+    perform pg_sleep(1.5);
+  end loop;
+  delete from bildirim_kuyruk where sent_at < now() - interval '7 days';
+  return n;
+end $$;
+
 -- ===== 5) Yetkiler ve zamanlayıcılar =====
 revoke execute on function public.bildirim_acik(uuid, text) from public, anon, authenticated;
 revoke execute on function public.takip_bildirim() from public, anon, authenticated;
+revoke execute on function public.bildirim_gonder() from public, anon, authenticated;
 revoke execute on function public.kupon_bildirim() from public, anon, authenticated;
 revoke execute on function public.gunsonu_bildirim() from public, anon, authenticated;
 revoke execute on function public.sabah_bildirim() from public, anon, authenticated;
