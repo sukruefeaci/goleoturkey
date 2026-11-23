@@ -110,6 +110,12 @@ body.auth header{display:none}
 .bhero{background:radial-gradient(120% 140% at 0% 0%,rgba(155,92,255,.2),transparent 55%),linear-gradient(180deg,var(--s2),var(--s1))}
 .bon{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-right:6px;box-shadow:0 0 8px var(--ok);animation:blk 1.6s infinite}
 .bper button{font-size:12px;padding:9px 2px}
+.frm{display:flex;flex-direction:column;gap:4px;margin-top:8px}.frm>div{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--mut)}.frm span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fch{display:flex;gap:3px;flex:none}.fch i{font-style:normal;width:18px;height:18px;border-radius:5px;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;color:#fff}.fch i.w{background:#16A34A}.fch i.d{background:#64748B}.fch i.l{background:#DC2626}
+.ban{margin-top:10px;background:rgba(155,92,255,.08);border:1px solid rgba(155,92,255,.25);border-radius:12px;padding:10px 12px}
+.ban summary{cursor:pointer;font-size:13px;font-weight:700;color:#D9C2FF;list-style:none}.ban summary::-webkit-details-marker{display:none}.ban summary::after{content:" ▾";color:var(--mut)}
+.ban p{margin:8px 0 0;font-size:13.5px;line-height:1.5;color:var(--tx)}
+.bsrc{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.bsrc a{font-size:11.5px;color:#C9A8FF;background:rgba(255,255,255,.04);border:1px solid var(--ln);border-radius:999px;padding:4px 9px;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .authc button{display:flex;justify-content:space-between;align-items:center;padding:16px 18px}
 .authc button.g{justify-content:center;background:none;border:0;color:var(--mut);font-weight:600}
 @keyframes glw{50%{box-shadow:0 0 40px var(--glow),inset 0 0 40px var(--glow),0 0 120px rgba(155,92,255,.5)}}
@@ -759,7 +765,7 @@ function fCiz(){
 }
 
 /* AI BOTLAR */
-let kT="kup",bP="tum",bSel=null,bg=new Date(),BOTS=[];
+let kT="kup",bP="tum",bSel=null,bg=new Date(),BOTS=[],BSRC=[];
 const ktabs=()=>`<div class="sg" id="ktabs"><button class="${kT=="kup"?"on":""}" onclick="kT='kup';bSel=null;vKup()">🎫 Kuponlar</button><button class="${kT=="bot"?"on":""}" onclick="kT='bot';vKup()">🤖 AI Botlar</button></div>`;
 const _vKup3=vKup;
 vKup=async function(){
@@ -770,11 +776,12 @@ vKup=async function(){
 const bYc=y=>y>=65?"var(--ok)":y>=55?"#F59E0B":"var(--bad)";
 const bAv=(b,z)=>`<div class="bav" style="--bc:${e(b.renk)}${z?`;width:${z}px;height:${z}px;font-size:${z/2}px`:""}">${e(b.avatar)}${b.vip?'<span class="bvk">VIP</span>':""}</div>`;
 const bDots=s=>{const a=(s||[]).slice().reverse();return `<div class="bdots">${a.map(d=>`<i class="${d=="tuttu"?"ok":"no"}"></i>`).join("")}${"<i></i>".repeat(5-a.length)}</div>`};
-const bBox=b=>`<div class="bbx"><b style="color:${b.toplam?bYc(b.yuzde):"var(--mut)"}">${b.toplam?"%"+b.yuzde:"–"}</b><span>Başarı</span></div><div class="bbx"><b>${b.toplam+(b.bekleyen||0)}</b><span>Tahmin</span></div><div class="bbx"><b style="color:var(--ok)">${b.kazanan}</b><span>Kazanan</span></div>`;
+const bGun=d=>{if(!d)return"–";const g=Math.round((new Date(key(new Date()))-new Date(d))/864e5);return g<=0?"Bugün":g+" gün"};
+const bBox=b=>b.strateji=="surpriz"?`<div class="bbx"><b style="color:#EC4899">${b.kazanan}</b><span>Tutan</span></div><div class="bbx"><b>${b.toplam+(b.bekleyen||0)}</b><span>Tahmin</span></div><div class="bbx"><b style="font-size:${b.son_tutan?13:15}px">${bGun(b.son_tutan)}</b><span>Son tutan</span></div>`:`<div class="bbx"><b style="color:${b.toplam?bYc(b.yuzde):"var(--mut)"}">${b.toplam?"%"+b.yuzde:"–"}</b><span>Başarı</span></div><div class="bbx"><b>${b.toplam+(b.bekleyen||0)}</b><span>Tahmin</span></div><div class="bbx"><b style="color:var(--ok)">${b.kazanan}</b><span>Kazanan</span></div>`;
 async function vBot(){
   const P=[["bugun","Bugün"],["dun","Dün"],["ay","Bu Ay"],["gecen","Geçen Ay"],["tum","Tümü"]];
   $("v").innerHTML=ktabs()+`<div class="c bhero"><div style="display:flex;gap:12px;align-items:center"><div class="bav" style="--bc:#9B5CFF;width:48px;height:48px;font-size:24px">🤖</div><div><b style="font-size:17px">Goleo AI Botları</b><div class="lg" style="margin:3px 0 0"><span class="bon"></span>Otomatik çalışıyor · 15 dk'da bir tarar</div></div></div>
-  <div class="lg" style="margin:10px 0 0">Botlar iddaa oranlarını tarar, her biri kendi stratejisine göre günlük tahmin paylaşır. Maç bitince sonuç otomatik işlenir. Buradaki istatistikler gerçek sonuçlardan hesaplanır, kazanç garantisi vermez.</div></div>
+  <div class="lg" style="margin:10px 0 0">Botlar iddaa oranlarını ve takımların son maç formunu tarar. Her tahminin altında takımların form verisinden hazırlanan bir analiz bulunur. Maç bitince sonuç otomatik işlenir; istatistikler gerçek sonuçlardan hesaplanır, kazanç garantisi vermez.</div></div>
   <div class="sg bper">${P.map(([k,n])=>`<button class="${k==bP?"on":""}" onclick="bP='${k}';vBot()">${n}</button>`).join("")}</div><div id="bl"><div class="c" style="height:240px;opacity:.4"></div></div>`;
   const {data,error}=await sb.rpc("bot_istatistik",{per:bP});
   if(tab!="kup"||kT!="bot"||bSel||!$("bl"))return;
@@ -787,16 +794,20 @@ async function vBotD(){
   if(!b){const {data}=await sb.rpc("bot_istatistik",{per:"tum"});BOTS=data||[];b=BOTS.find(x=>x.id==id);if(!b){bSel=null;return vBot()}}
   $("v").innerHTML=ktabs()+`<button class="g" style="width:auto;padding:9px 14px;margin:0 0 12px" onclick="bSel=null;vBot()">‹ Tüm botlar</button>
   <div class="c"><div style="display:flex;gap:12px;align-items:center">${bAv(b,56)}<div style="flex:1;min-width:0"><b style="font-size:19px">${e(b.ad)}${b.vip?' <span class="bvip">VIP</span>':""}</b><div class="lg" style="margin:3px 0 0">${e(b.aciklama||"")}</div>${bDots(b.son5)}</div></div>
-  <div class="bstat">${bBox(b)}</div><div class="lg" style="text-align:center;margin:8px 0 0">${bP=="tum"?"Tüm zamanlar":"Seçili dönem"}${b.bekleyen?` · ${b.bekleyen} tahmin sonuç bekliyor`:""} · Başarı sonuçlananlardan hesaplanır</div></div>
+  <div class="bstat">${bBox(b)}</div>${b.strateji=="surpriz"&&b.son_tutan_oran?`<div class="pk" style="display:block;text-align:center;margin-top:10px;background:rgba(236,72,153,.14);color:#F9A8D4;border-color:rgba(236,72,153,.35)">💥 Son tutan: ${bGun(b.son_tutan)} önce · oran ${Number(b.son_tutan_oran).toFixed(2)}</div>`:""}<div class="lg" style="text-align:center;margin:8px 0 0">${bP=="tum"?"Tüm zamanlar":"Seçili dönem"}${b.bekleyen?` · ${b.bekleyen} tahmin sonuç bekliyor`:""} · Başarı sonuçlananlardan hesaplanır</div></div>
   <div class="dt"><button onclick="bg.setDate(bg.getDate()-1);vBotD()">‹</button><span>${bg.toLocaleDateString("tr-TR",{day:"numeric",month:"long",weekday:"long"})}</span><button onclick="bg.setDate(bg.getDate()+1);vBotD()">›</button></div><div id="bt"><div class="c" style="height:120px;opacity:.4"></div></div>`;
   const {data,error}=await sb.rpc("bot_tahminler",{bid:id,d});
   if(tab!="kup"||kT!="bot"||bSel!=id||key(bg)!=d||!$("bt"))return;
-  const L=data||[];
+  const L=data||[];BSRC=[];
   $("bt").innerHTML=error?bos("Tahminler yüklenemedi."):L.length?L.map(t=>{
     const sk=t.s1!=null&&t.s2!=null?`<span class="pk" style="margin:0 0 0 6px">${t.s1}-${t.s2}</span>`:"";
     const dz=t.durum=="tuttu"?'<span class="pk y">✓ TUTTU</span>':t.durum=="yatti"?'<span class="pk k">✗ YATTI</span>':t.durum=="iptal"?'<span class="pk">ERTELENDİ</span>':'<span class="pk">⏳ BEKLİYOR</span>';
-    return `<div class="c"><div class="lg">${e(t.lig)} · ${e(t.saat)}</div><div class="tk"><span>${e(t.ev)} – ${e(t.dep)}</span>${t.kilit?"":`<span style="color:${gc(t.guven)}">%${t.guven}</span>`}</div>
+    const fc=f=>f&&f.form?`<span class="fch">${[...f.form].map(c=>`<i class="${c=="G"?"w":c=="M"?"l":"d"}">${c}</i>`).join("")}</span>`:"";
+    const fr=t.form&&(t.form.ev&&t.form.ev.form||t.form.dep&&t.form.dep.form)?`<div class="frm"><div><span>${e(t.ev)}</span>${fc(t.form.ev)}</div><div><span>${e(t.dep)}</span>${fc(t.form.dep)}</div></div>`:"";
+    const big=Number(t.oran)>=5;
+    const an=!t.kilit&&t.analiz?`<details class="ban"><summary>📊 Maç analizi</summary><p>${e(t.analiz)}</p>${(t.kaynaklar||[]).length?`<div class="bsrc">${t.kaynaklar.map(k=>`<a onclick="openL(BSRC[${BSRC.push(String(k.url||""))-1}])">${e(k.baslik||"Kaynak")}</a>`).join("")}</div>`:""}</details>`:"";
+    return `<div class="c"><div class="lg">${e(t.lig)} · ${e(t.saat)}</div><div class="tk"><span>${e(t.ev)} – ${e(t.dep)}</span>${t.kilit||big?"":`<span style="color:${gc(t.guven)}">%${t.guven}</span>`}</div>${fr}
     ${t.kilit?`<div class="bl"><div class="bx"><b>MS 1 · Oran 1.45</b><div>Güven %70</div></div><div class="ov"><button onclick="kT='kup';bSel=null;vipGit()">🔒 VIP ile aç</button></div></div>`
-    :`<div style="margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b style="font-size:16px">${e(t.tahmin)}</b><span class="pk" style="margin:0">Oran ${Number(t.oran).toFixed(2)}</span>${sk}</div>`}<div>${dz}</div></div>`}).join(""):bos(key(bg)==key(new Date())?"Bu bot bugün henüz tahmin paylaşmadı. Uygun maç bulunca otomatik paylaşır.":"Bu gün için tahmin yok.");
+    :`<div style="margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b style="font-size:16px">${e(t.tahmin)}</b><span class="pk" style="margin:0;${big?"background:rgba(236,72,153,.16);color:#F9A8D4;border-color:rgba(236,72,153,.4);font-size:14px":""}">Oran ${Number(t.oran).toFixed(2)}</span>${sk}</div>`}<div>${dz}</div>${an}</div>`}).join(""):bos(key(bg)==key(new Date())?"Bu bot bugün henüz tahmin paylaşmadı. Uygun maç bulunca otomatik paylaşır.":"Bu gün için tahmin yok.");
 }
 </script></body></html>
