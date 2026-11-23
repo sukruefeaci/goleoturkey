@@ -770,7 +770,7 @@ vKup=async function(){
 const bYc=y=>y>=65?"var(--ok)":y>=55?"#F59E0B":"var(--bad)";
 const bAv=(b,z)=>`<div class="bav" style="--bc:${e(b.renk)}${z?`;width:${z}px;height:${z}px;font-size:${z/2}px`:""}">${e(b.avatar)}${b.vip?'<span class="bvk">VIP</span>':""}</div>`;
 const bDots=s=>{const a=(s||[]).slice().reverse();return `<div class="bdots">${a.map(d=>`<i class="${d=="tuttu"?"ok":"no"}"></i>`).join("")}${"<i></i>".repeat(5-a.length)}</div>`};
-const bBox=b=>`<div class="bbx"><b style="color:${b.toplam?bYc(b.yuzde):"var(--mut)"}">${b.toplam?"%"+b.yuzde:"–"}</b><span>Başarı</span></div><div class="bbx"><b>${b.toplam}</b><span>Tahmin</span></div><div class="bbx"><b style="color:var(--ok)">${b.kazanan}</b><span>Kazanan</span></div>`;
+const bBox=b=>`<div class="bbx"><b style="color:${b.toplam?bYc(b.yuzde):"var(--mut)"}">${b.toplam?"%"+b.yuzde:"–"}</b><span>Başarı</span></div><div class="bbx"><b>${b.toplam+(b.bekleyen||0)}</b><span>Tahmin</span></div><div class="bbx"><b style="color:var(--ok)">${b.kazanan}</b><span>Kazanan</span></div>`;
 async function vBot(){
   const P=[["bugun","Bugün"],["dun","Dün"],["ay","Bu Ay"],["gecen","Geçen Ay"],["tum","Tümü"]];
   $("v").innerHTML=ktabs()+`<div class="c bhero"><div style="display:flex;gap:12px;align-items:center"><div class="bav" style="--bc:#9B5CFF;width:48px;height:48px;font-size:24px">🤖</div><div><b style="font-size:17px">Goleo AI Botları</b><div class="lg" style="margin:3px 0 0"><span class="bon"></span>Otomatik çalışıyor · 15 dk'da bir tarar</div></div></div>
@@ -787,7 +787,7 @@ async function vBotD(){
   if(!b){const {data}=await sb.rpc("bot_istatistik",{per:"tum"});BOTS=data||[];b=BOTS.find(x=>x.id==id);if(!b){bSel=null;return vBot()}}
   $("v").innerHTML=ktabs()+`<button class="g" style="width:auto;padding:9px 14px;margin:0 0 12px" onclick="bSel=null;vBot()">‹ Tüm botlar</button>
   <div class="c"><div style="display:flex;gap:12px;align-items:center">${bAv(b,56)}<div style="flex:1;min-width:0"><b style="font-size:19px">${e(b.ad)}${b.vip?' <span class="bvip">VIP</span>':""}</b><div class="lg" style="margin:3px 0 0">${e(b.aciklama||"")}</div>${bDots(b.son5)}</div></div>
-  <div class="bstat">${bBox(b)}</div><div class="lg" style="text-align:center;margin:8px 0 0">${bP=="tum"?"Tüm zamanlar":"Seçili dönem"} · sonuçlanan tahminler</div></div>
+  <div class="bstat">${bBox(b)}</div><div class="lg" style="text-align:center;margin:8px 0 0">${bP=="tum"?"Tüm zamanlar":"Seçili dönem"}${b.bekleyen?` · ${b.bekleyen} tahmin sonuç bekliyor`:""} · Başarı sonuçlananlardan hesaplanır</div></div>
   <div class="dt"><button onclick="bg.setDate(bg.getDate()-1);vBotD()">‹</button><span>${bg.toLocaleDateString("tr-TR",{day:"numeric",month:"long",weekday:"long"})}</span><button onclick="bg.setDate(bg.getDate()+1);vBotD()">›</button></div><div id="bt"><div class="c" style="height:120px;opacity:.4"></div></div>`;
   const {data,error}=await sb.rpc("bot_tahminler",{bid:id,d});
   if(tab!="kup"||kT!="bot"||bSel!=id||key(bg)!=d||!$("bt"))return;
