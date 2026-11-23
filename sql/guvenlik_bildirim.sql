@@ -30,6 +30,16 @@ begin
   end loop;
 end $$;
 
+-- 1c-2) Uygulamanın kullanmadığı, sunucu tarafı fonksiyonlar (zamanlayıcı yine çalıştırabilir)
+do $$
+declare f oid;
+begin
+  for f in select p.oid from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+           where n.nspname = 'public' and p.proname in ('vip_remind', 'match_stats') loop
+    execute 'revoke execute on function ' || f::regprocedure || ' from authenticated';
+  end loop;
+end $$;
+
 -- 1d) profiles: kullanıcı sadece Telegram adını ve bildirim ayarını değiştirebilir
 --     (puan, admin yetkisi, kullanıcı adı ve referans asla)
 revoke insert, update, delete on public.profiles from authenticated;
