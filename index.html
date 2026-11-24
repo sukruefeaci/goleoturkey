@@ -4,6 +4,7 @@
 <meta name="theme-color" content="#09070F">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Goleo</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240"%3E%3Cdefs%3E%3ClinearGradient id="lrf" x1="0" y1="0" x2="1" y2="1"%3E%3Cstop offset="0" stop-color="#C9A8FF"/%3E%3Cstop offset=".55" stop-color="#9B5CFF"/%3E%3Cstop offset="1" stop-color="#E25CFF"/%3E%3C/linearGradient%3E%3ClinearGradient id="lgf" x1="0" y1="0" x2="0" y2="1"%3E%3Cstop offset="0" stop-color="#fff"/%3E%3Cstop offset="1" stop-color="#DCC8FF"/%3E%3C/linearGradient%3E%3CradialGradient id="lbf" cx=".5" cy=".38" r=".7"%3E%3Cstop offset="0" stop-color="#3A2170"/%3E%3Cstop offset="1" stop-color="#120D1F"/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx="120" cy="120" r="104" fill="url(#lbf)"/%3E%3Ccircle cx="120" cy="120" r="104" fill="none" stroke="url(#lrf)" stroke-width="11"/%3E%3Cpath d="M168 86 A58 58 0 1 0 176 132 L176 124 L128 124" fill="none" stroke="url(#lgf)" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/%3E%3Cpolygon points="120,105 136,117 130,136 110,136 104,117" fill="#9B5CFF" stroke="#fff" stroke-width="4" stroke-linejoin="round"/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://iaomtetwapkqaudmdzit.supabase.co" crossorigin>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -148,6 +149,13 @@ body.in header h1::after{display:none}
 .sw.sm{width:44px;height:26px}.sw.sm span::after{width:18px;height:18px}.sw.sm input:checked+span::after{transform:translateX(18px)}
 .bstar{display:inline-flex;width:auto;margin:0 0 0 2px;padding:0 4px;background:none;border:0;box-shadow:none;color:var(--mut);font-size:18px;line-height:1;vertical-align:-1px}
 .bstar.on{color:#F5C542;text-shadow:0 0 10px rgba(245,197,66,.5)}
+.brandh{display:flex;align-items:center;gap:10px}
+.hlogo{width:34px;height:34px;flex:none;filter:drop-shadow(0 0 8px rgba(155,92,255,.55))}
+header h1::after{display:none!important}
+@media (max-width:430px){body.in header h1{display:none}body.in .hlogo{width:38px;height:38px}}
+.ring.rl{border:0;box-shadow:none;background:none;animation:none;width:190px;height:190px;font-size:0;filter:drop-shadow(0 0 28px rgba(155,92,255,.6));animation:glw2 3s ease-in-out infinite}
+.alogo{width:100%;height:100%}
+@keyframes glw2{50%{filter:drop-shadow(0 0 46px rgba(155,92,255,.85))}}
 .authc button{display:flex;justify-content:space-between;align-items:center;padding:16px 18px}
 .authc button.g{justify-content:center;background:none;border:0;color:var(--mut);font-weight:600}
 @keyframes glw{50%{box-shadow:0 0 40px var(--glow),inset 0 0 40px var(--glow),0 0 120px rgba(155,92,255,.5)}}
@@ -156,7 +164,7 @@ body.in header h1::after{display:none}
 @keyframes gtoast{from{opacity:0;transform:translate(-50%,-10px)}to{opacity:1;transform:translate(-50%,0)}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style></head><body>
-<header><h1>Goleo</h1><div class="hr"><span class="pt" id="pt"></span><button class="hb" onclick="puanAl()">+ Puan Al</button><button class="hb hv" onclick="vipOl()">👑 VIP Ol</button></div></header>
+<header><div class="brandh"><svg class="hlogo" viewBox="0 0 240 240" aria-hidden="true"><defs><linearGradient id="lrh" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#C9A8FF"/><stop offset=".55" stop-color="#9B5CFF"/><stop offset="1" stop-color="#E25CFF"/></linearGradient><linearGradient id="lgh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#DCC8FF"/></linearGradient><radialGradient id="lbh" cx=".5" cy=".38" r=".7"><stop offset="0" stop-color="#3A2170"/><stop offset="1" stop-color="#120D1F"/></radialGradient></defs><circle cx="120" cy="120" r="104" fill="url(#lbh)"/><circle cx="120" cy="120" r="104" fill="none" stroke="url(#lrh)" stroke-width="11"/><path d="M168 86 A58 58 0 1 0 176 132 L176 124 L128 124" fill="none" stroke="url(#lgh)" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/><polygon points="120,105 136,117 130,136 110,136 104,117" fill="#9B5CFF" stroke="#fff" stroke-width="4" stroke-linejoin="round"/></svg><h1>Goleo</h1></div><div class="hr"><span class="pt" id="pt"></span><button class="hb" onclick="puanAl()">+ Puan Al</button><button class="hb hv" onclick="vipOl()">👑 VIP Ol</button></div></header>
 <div id="v"></div>
 <nav id="nav" style="display:none"></nav>
 <div id="ts"></div>
@@ -216,7 +224,7 @@ function go(t){
 
 /* GIRIS */
 function authV(){
-  $("v").innerHTML=`<div class="hero"><div class="ring">⚽</div><div class="brand">GOLEO</div><div class="tag">Günlük tahminler. Topluluk onaylı.</div></div>
+  $("v").innerHTML=`<div class="hero"><div class="ring rl"><svg class="alogo" viewBox="0 0 240 240" aria-hidden="true"><defs><linearGradient id="lra" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#C9A8FF"/><stop offset=".55" stop-color="#9B5CFF"/><stop offset="1" stop-color="#E25CFF"/></linearGradient><linearGradient id="lga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#DCC8FF"/></linearGradient><radialGradient id="lba" cx=".5" cy=".38" r=".7"><stop offset="0" stop-color="#3A2170"/><stop offset="1" stop-color="#120D1F"/></radialGradient></defs><circle cx="120" cy="120" r="104" fill="url(#lba)"/><circle cx="120" cy="120" r="104" fill="none" stroke="url(#lra)" stroke-width="11"/><path d="M168 86 A58 58 0 1 0 176 132 L176 124 L128 124" fill="none" stroke="url(#lga)" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/><polygon points="120,105 136,117 130,136 110,136 104,117" fill="#9B5CFF" stroke="#fff" stroke-width="4" stroke-linejoin="round"/></svg></div><div class="brand">GOLEO</div><div class="tag">Günlük tahminler. Topluluk onaylı.</div></div>
   <div class="c authc"><h3>${kayit?"Hesap oluştur":"Hoş geldin"}</h3>
   <input id="em" type="email" placeholder="E-posta" autocomplete="email">
   <input id="pw" type="password" placeholder="Şifre (en az 6 karakter)">
@@ -380,7 +388,7 @@ async function vPro(){
   ${bAyarH()}
   <div class="c"><b>Son puanlar</b>${lg}</div><button class="g" onclick="sb.auth.signOut()">Çıkış yap</button>`;
 }
-const BTUR=[["sabah","☀️ Sabah bot özeti","Her sabah 09:35, günün bot tahminleri"],["takip","⭐ Takip ettiğin botlar","Yıldızladığın bot tahmin paylaşınca"],["kupon","🎫 Yeni kupon","Yeni kupon yayınlanınca"],["gunsonu","🌙 Gün sonu özeti","Her gece 00:00, günün sonuçları"],["surpriz","💣 Sürpriz Bot","Sürpriz Bot tuttuğunda"],["vip","👑 VIP sonuçları","Aldığın VIP tahmin tuttuğunda"]];
+const BTUR=[["sabah","☀️ Sabah bot özeti","Her sabah 09:35, günün bot tahminleri"],["takip","⭐ Takip ettiğin botlar","Yıldızladığın bot tahmin paylaşınca ve tahmini tutunca"],["kupon","🎫 Yeni kupon","Yeni kupon yayınlanınca"],["gunsonu","🌙 Gün sonu özeti","Her gece 00:00, günün sonuçları"],["surpriz","💣 Sürpriz Bot","Sürpriz Bot tuttuğunda"],["vip","👑 VIP sonuçları","Aldığın VIP tahmin tuttuğunda"]];
 function bAyarH(){
   const ana=prof.bildirim!==false,A=prof.bildirim_ayar||{};
   return `<div class="c" id="bayar"><div class="bld"><div><b>🔔 Bildirimler</b><div class="lg" style="margin:3px 0 0">Telegram'dan almak istediklerini seç. Bildirimler, uygulamayı Telegram'dan açtığın hesaba gelir.</div></div><label class="sw"><input type="checkbox" ${ana?"checked":""} onchange="bildirimAyar(this)"><span></span></label></div>
