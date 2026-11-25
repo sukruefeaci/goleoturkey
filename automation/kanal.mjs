@@ -187,12 +187,17 @@ async function sabah() {
   if (!secim.length) { console.log('Paylaşılacak tercih yok.'); return; }
   const png = await render(secim.map(s => tercihHtml(s.bot, s.p, gun)));
   if (DRY) kaydet(png, 'sabah');
-  const satir = secim.map(({ bot, p }) => bot.vip
-    ? `${bot.avatar} <b>${esc(bot.ad)}</b>: ${esc(p.saat)} ${esc(p.ev)} – ${esc(p.dep)} · 🔒 VIP`
-    : `${bot.avatar} <b>${esc(bot.ad)}</b>: ${esc(p.saat)} ${esc(p.ev)} – ${esc(p.dep)} · ${esc(p.tahmin)} (${Number(p.oran).toFixed(2)})`).join('\n');
-  const aciklama = `☀️ <b>Goleo AI botlarının bugünkü tercihleri</b>\n\n${satir}\n\n🤖 Tüm tahminler ve analizler: @goleoaibot\n<i>Kazanç garantisi yoktur. 18+</i>`;
-  await albumGonder(png, aciklama.slice(0, 1024));
-  await isaretle(secim.map(s => s.p.id), 'kanal_paylasildi');
+  // her bot ayrı gönderi: görsel + kendi açıklaması
+  for (let i = 0; i < secim.length; i++) {
+    const { bot, p } = secim[i];
+    const mac = `⏰ ${esc(p.saat)} · ${esc(p.lig || '')}\n⚽ <b>${esc(p.ev)} – ${esc(p.dep)}</b>`;
+    const aciklama = bot.vip
+      ? `${bot.avatar} <b>${esc(bot.ad)}</b> · VIP\n\n${mac}\n\n🔒 Tahmin ve oran VIP üyelere özel.\n👑 VIP ol: @goleoaibot\n\n<i>Kazanç garantisi yoktur. 18+</i>`
+      : `${bot.avatar} <b>${esc(bot.ad)}</b> · Günün tercihi\n\n${mac}\n👉 <b>${esc(p.tahmin)}</b> · Oran ${Number(p.oran).toFixed(2)} · Güven %${p.guven}\n\n🤖 Tüm tahminler: @goleoaibot\n<i>Kazanç garantisi yoktur. 18+</i>`;
+    await albumGonder([png[i]], aciklama.slice(0, 1024));
+    await isaretle([p.id], 'kanal_paylasildi');
+    if (i < secim.length - 1 && !DRY) await new Promise(r => setTimeout(r, 2500));
+  }
   console.log('Sabah paylaşıldı:', secim.length, 'tercih');
 }
 
