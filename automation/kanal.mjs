@@ -27,7 +27,7 @@ async function sb(path, opt = {}) {
   if (DRY) return null;
   const r = await fetch(SB_URL + '/rest/v1/' + path, {
     ...opt,
-    headers: { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal', ...(opt.headers || {}) }
+    headers: { apikey: SB_KEY, ...(SB_KEY.startsWith('eyJ') ? { Authorization: 'Bearer ' + SB_KEY } : {}), 'Content-Type': 'application/json', Prefer: 'return=minimal', ...(opt.headers || {}) }
   });
   if (!r.ok) throw new Error('Supabase ' + r.status + ' ' + (await r.text()).slice(0, 300));
   return r.status === 204 ? null : r.json();
