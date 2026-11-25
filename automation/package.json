@@ -1,0 +1,8 @@
+{
+  "name": "goleo-kanal",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "playwright": "1.49.1"
+  }
+}

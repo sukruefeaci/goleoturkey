@@ -1,0 +1,44 @@
+name: Telegram kanal paylaşımı
+
+on:
+  schedule:
+    - cron: '0 7 * * *'    # 10:00 TR - sabah tercihleri
+    - cron: '0 22 * * *'   # 01:00 TR - gece sonuçları
+  workflow_dispatch:
+    inputs:
+      mod:
+        description: 'sabah veya gece'
+        required: true
+        default: 'sabah'
+
+concurrency:
+  group: kanal
+  cancel-in-progress: false
+
+jobs:
+  paylas:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: automation
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Yazı tipleri
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-inter fonts-noto-color-emoji
+      - name: Kurulum
+        run: npm install --no-audit --no-fund && npx playwright install --with-deps chromium
+      - name: Paylaş
+        env:
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          KANAL: '@goleoresmi'
+        run: |
+          MOD="${{ github.event.inputs.mod }}"
+          if [ -z "$MOD" ]; then
+            if [ "${{ github.event.schedule }}" = "0 22 * * *" ]; then MOD=gece; else MOD=sabah; fi
+          fi
+          node kanal.mjs "$MOD"
