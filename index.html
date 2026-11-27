@@ -654,10 +654,24 @@ async function aAyar(){
   const ST=Object.fromEntries((st.data||[]).map(x=>[x.key,x.value])),C=Object.fromEntries((cf.data||[]).map(x=>[x.key,x.value]));
   const pl=(pk.data||[]).map(x=>`<div class="c cc" data-id="${x.id}" style="background:var(--s3)"><div class="row"><div><div class="lg">Puan</div><input class="p-pts" type="number" value="${x.points}"></div><div><div class="lg">Fiyat yazısı</div><input class="p-lbl" value="${e(x.price_label)}"></div></div>
   <div class="row"><input class="p-sort" type="number" placeholder="Sıra" value="${x.sort}"><select class="p-act">${onOff(x.active)}</select></div><button onclick="pkKaydet(${x.id})">Kaydet</button></div>`).join("");
-  ab(`<div class="c"><b>Puan ayarları</b><div class="lg">Davet başına referans puanı</div><input id="sr" type="number" value="${ST.ref_points??50}">
+  const ka=C.kanal_aktif!=="0",ba=C.bildirim_aktif!=="0";
+  ab(`<div class="c" style="border:1.5px solid ${ka&&ba?"rgba(52,211,153,.5)":"rgba(248,113,113,.6)"}"><b>📡 Telegram gönderimleri</b>
+  <div class="lg" style="margin:4px 0 6px">Kapatınca Telegram'a o türde hiçbir şey gönderilmez. Açınca kaldığı yerden devam eder.</div>
+  <div class="bld bsat"><div><b>📢 Kanal paylaşımları</b><div class="lg" style="margin:2px 0 0">@goleoresmi · sabah tercihleri ve gece sonuçları</div></div><label class="sw"><input type="checkbox" ${ka?"checked":""} onchange="tgAyar('kanal_aktif',this)"><span></span></label></div>
+  <div class="bld bsat"><div><b>🔔 Kullanıcı bildirimleri</b><div class="lg" style="margin:2px 0 0">Sabah özeti, takip, kupon, gün sonu, VIP sonuç mesajları</div></div><label class="sw"><input type="checkbox" ${ba?"checked":""} onchange="tgAyar('bildirim_aktif',this)"><span></span></label></div>
+  <button class="r" style="margin-top:12px" onclick="tgHepsi()">⛔ Tüm Telegram paylaşımlarını durdur</button></div>
+  <div class="c"><b>Puan ayarları</b><div class="lg">Davet başına referans puanı</div><input id="sr" type="number" value="${ST.ref_points??50}">
   <div class="lg">Tutan paylaşım puanı</div><input id="st" type="number" value="${ST.tip_points??20}"><button onclick="sKaydet()">Kaydet</button></div>
   <div class="c"><b>Satın alma linki (Telegram)</b><div class="lg">"Satın Al" butonu bu linki açar. Örn: https://t.me/kullaniciadi</div><input id="atg" value="${e(C.admin_tg||"")}"><button onclick="cfgKaydet()">Kaydet</button></div>
   <h3>💎 Puan paketleri</h3>${pl||bos("Paket yok.")}`)}
+async function tgAyar(k,el){
+  const {error}=await sb.from("config").upsert({key:k,value:el.checked?"1":"0"});
+  if(error){el.checked=!el.checked;return toast("Kaydedilemedi")}
+  toast(el.checked?"Açıldı ✓":"Durduruldu ⛔");aAyar()}
+async function tgHepsi(){
+  if(!confirm("Kanal paylaşımları ve kullanıcı bildirimleri durdurulsun mu?"))return;
+  const {error}=await sb.from("config").upsert([{key:"kanal_aktif",value:"0"},{key:"bildirim_aktif",value:"0"}]);
+  toast(error?"Kaydedilemedi":"Tüm Telegram paylaşımları durduruldu ⛔");aAyar()}
 async function sKaydet(){
   const {error}=await sb.from("settings").upsert([{key:"ref_points",value:+$("sr").value},{key:"tip_points",value:+$("st").value}]);
   toast(error?error.message:"Ayarlar kaydedildi")}

@@ -27,7 +27,7 @@ async function sb(path, opt = {}) {
   if (DRY) return null;
   const r = await fetch(SB_URL + '/rest/v1/' + path, {
     ...opt,
-    headers: { apikey: SB_KEY, ...(SB_KEY.startsWith('eyJ') ? { Authorization: 'Bearer ' + SB_KEY } : {}), 'Content-Type': 'application/json', Prefer: 'return=minimal', ...(opt.headers || {}) }
+    headers: { apikey: SB_KEY, ...(SB_KEY.startsWith('eyJ') ? { Authorization: 'Bearer ' + SB_KEY } : {}), 'Content-Type': 'application/json', ...(opt.method && opt.method !== 'GET' ? { Prefer: 'return=minimal' } : {}), ...(opt.headers || {}) }
   });
   if (!r.ok) throw new Error('Supabase ' + r.status + ' ' + (await r.text()).slice(0, 300));
   return r.status === 204 ? null : r.json();
@@ -219,4 +219,12 @@ async function gece() {
 }
 
 if (!DRY && (!SB_KEY || !TG)) { console.error('SUPABASE_SERVICE_KEY ve TELEGRAM_BOT_TOKEN gerekli'); process.exit(1); }
-(MOD === 'gece' ? gece() : sabah()).catch(e => { console.error(e); process.exit(1); });
+async function aktifMi() {
+  if (DRY) return true;
+  const r = await sb('config?select=value&key=eq.kanal_aktif');
+  return !(r && r[0] && r[0].value === '0');
+}
+aktifMi().then(ok => {
+  if (!ok) { console.log('Kanal paylaşımları admin panelinden durdurulmuş, hiçbir şey gönderilmedi.'); return; }
+  return MOD === 'gece' ? gece() : sabah();
+}).catch(e => { console.error(e); process.exit(1); });
